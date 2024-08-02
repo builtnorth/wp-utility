@@ -12,7 +12,7 @@
  * 
  **/
 
-namespace BuiltNorth\Polaris\Helpers;
+namespace BuiltNorth\Utility;
 
 
 /**

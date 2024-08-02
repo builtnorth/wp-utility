@@ -12,7 +12,8 @@
  * 
  **/
 
-namespace BuiltNorth\Polaris\Helpers;
+namespace BuiltNorth\Utility;
+
 
 /**
  * If this file is called directly, abort.

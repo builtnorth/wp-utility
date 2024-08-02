@@ -1,6 +1,6 @@
-# WP Baseline
+# WP Utility
 
-Composer package containing core functionality that is used across Built North WordPress sites. This package is meant to dropped in to either a theme or plugin.
+Composer package containing utility items for use in WordPress themes and plugins.
 
 ## Requirements
 
@@ -11,30 +11,40 @@ Composer package containing core functionality that is used across Built North W
 
 This library is meant to be dropped into a theme or plugin via composer.
 
-1. In your WordPress project directory, run: `composer require builtnorth/wp-baseline`.
+1. In your WordPress project directory, run: `composer require builtnorth/wp-utility`.
 2. In your main plugin file or theme's functions.php, add:
 
 ```php
-use BuiltNorth\Baseline\Init;
+use BuiltNorth\Utility;
 
-if (class_exists('BuiltNorth\Baseline\Init')) {
-    Init::boot();
+if (class_exists('BuiltNorth\Utility\Init')) {
+    Utility\Init::instance();
 }
 ```
 
 ## Features
 
--   Cleanup of unnessary WordPress functionality.
--   Enhanced security measures.
--   Option to disable comments (see below).
+-   Images Setup:
+    -   Removes default/ core image sizes.
+    -   Adds custom image sizes via `add_image_size`. Image sizes are optimized for use with responsive images.
+    -   Adds custom image sizes to the block editor image size select dropdown.
+    -   Sets a reasonable max image width.
+    -   @todo allow customization/overriding of all of these settings.
+-   Utility Functions:
 
-### Disable Comments
+    -   Responsive image helper
 
-Comments are disabled by default. If your site requires comment functionality simply, set this feature to return false:
-
-```
-add_filter('built_baseline_disable_comments', '__return_false');
-```
+        ```
+        Utility::image(
+        	id: $image_id,
+        	size: $image_size,
+        	max_width: $max_width,
+        	wrap_class: 'cover',
+        	class: null,
+        	show_caption: $image_caption,
+        	lazy: $lazy,
+        );
+        ```
 
 ## Disclaimer
 
