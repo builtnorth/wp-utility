@@ -34,7 +34,8 @@ class Utility
 		$wrap_class = 'standard',
 		$include_figure = true,
 		$size = 'full',
-		$max_width = '1200px'
+		$max_width = '1200px',
+		$style = null  // New optional parameter
 	) {
 
 		// check the image ID is not empty
@@ -93,6 +94,9 @@ class Utility
 				$lazy = 'loading=eager decoding=sync fetchpriority="high"';
 			}
 
+			// Add style to img attributes if provided
+			$style = $style ? " style='$style'" : '';
+
 			// Include figure
 			if (true == $include_figure) {
 
@@ -107,6 +111,7 @@ class Utility
 							sizes='(max-width: $max_width) 100vw, $max_width'
 							width='$width'
 							height='$height'
+							$style
 						/>
 						$caption 
 					</figure>";
@@ -122,6 +127,7 @@ class Utility
 							sizes='(max-width: $max_width) 100vw, $max_width'
 							width='$width'
 							height='$height'
+							$style
 						/>";
 			}
 		}
