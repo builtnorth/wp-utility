@@ -134,4 +134,9 @@ class ImageSetup
 			'wide_xsmall' => __('Extra Small'),
 		));
 	}
+
+	public static function render()
+	{
+		return self::instance();
+	}
 }
