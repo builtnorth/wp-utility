@@ -18,7 +18,7 @@ namespace BuiltNorth\Utility;
  */
 defined('ABSPATH') || exit;
 
-class Utility
+class Component
 {
 	/**
 	 * Render a component.
@@ -29,10 +29,10 @@ class Utility
 	 */
 	public static function __callStatic($name, $arguments)
 	{
-		$utilityClass = __NAMESPACE__ . '\\Utilities\\' . ucfirst($name);
-		if (class_exists($utilityClass)) {
-			return call_user_func_array([$utilityClass, 'render'], $arguments);
+		$componentClass = __NAMESPACE__ . '\\Components\\' . ucfirst($name);
+		if (class_exists($componentClass) && method_exists($componentClass, 'render')) {
+			return call_user_func_array([$componentClass, 'render'], $arguments);
 		}
-		throw new \BadMethodCallException("Utility $name does not exist.");
+		throw new \BadMethodCallException("Component $name does not exist.");
 	}
 }

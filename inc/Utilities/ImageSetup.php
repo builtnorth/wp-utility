@@ -12,7 +12,7 @@
  * 
  **/
 
-namespace BuiltNorth\Utility;
+namespace BuiltNorth\Utility\Utilities;
 
 
 /**
@@ -133,5 +133,10 @@ class ImageSetup
 			'wide_small' => __('Small'),
 			'wide_xsmall' => __('Extra Small'),
 		));
+	}
+
+	public static function render()
+	{
+		return self::instance();
 	}
 }

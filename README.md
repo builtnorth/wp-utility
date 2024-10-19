@@ -30,12 +30,12 @@ if (class_exists('BuiltNorth\Utility\Init')) {
     -   Adds custom image sizes to the block editor image size select dropdown.
     -   Sets a reasonable max image width.
     -   @todo allow customization/overriding of all of these settings.
--   Utility Functions:
+-   Components:
 
     -   Responsive image helper
 
         ```
-        Utility::image(
+        Component::Image(
         	id: $image_id,
         	size: $image_size,
         	max_width: $max_width,

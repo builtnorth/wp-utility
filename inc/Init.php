@@ -40,7 +40,8 @@ class Init
 	 * @var array
 	 */
 	protected $classes = [
-		'ImageSetup',
+		'Utility',
+		'Component',
 	];
 
 	/**
