@@ -12,7 +12,7 @@
  * 
  **/
 
-namespace BuiltNorth\Utility;
+namespace BuiltNorth\Utility\Utilities;
 
 
 /**
