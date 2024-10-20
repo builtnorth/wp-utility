@@ -64,12 +64,11 @@ class Image
 
 		// Set alt text
 		$alt = $custom_alt ?: $image_alt;
-
 		// add class
-		$class = $class ? " class='" . esc_attr($class) . "'" : '';
+		$class = $class ? esc_attr($class) : 'image';
 
 		// Add caption
-		$caption = ($show_caption === true && !empty($image_caption)) ? "<figcaption>" . esc_html($image_caption) . "</figcaption>" : '';
+		$caption = ($show_caption === true && !empty($image_caption)) ? '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($image_caption) . '</figcaption>' : '';
 
 		// Set lazy loading
 		$lazy = $lazy ? 'loading=lazy decoding=async' : 'loading=eager decoding=sync fetchpriority="high"';
@@ -80,7 +79,7 @@ class Image
 		// Build the img tag	
 		$img_tag = "<img
 			$lazy 
-			$class 
+			class='" . esc_attr($class) . "__img'
 			alt='" . esc_attr($alt) . "'
 			src='" . esc_url($src) . "'
 			srcset='" . esc_attr($srcset) . "'
@@ -92,7 +91,7 @@ class Image
 
 		// Include figure
 		if ($include_figure) {
-			echo "<figure class='image__wrap image__wrap--" . esc_attr($wrap_class) . "'>
+			echo "<figure class='" . esc_attr($class) . "__figure'>
 				$img_tag
 				$caption 
 			</figure>";

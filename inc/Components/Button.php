@@ -6,6 +6,7 @@ class Button
 {
 	public static function render(
 		$class = null,
+		$style = 'default',
 		$text = 'Button Text',
 		$link = '#',
 		$target = null,
@@ -22,9 +23,18 @@ class Button
 			$target = 'target="' . $target . '"';
 		}
 
+		// Add class
+		if ($class) {
+			$wrapper_class = $class . '__button ';
+			$link_class = $class . '__button-link ';
+		} else {
+			$wrapper_class = null;
+			$link_class = null;
+		}
+
 		echo
-		'<div class="wp-block-button ' . $class . '">' .
-			'<a class="wp-block-button__link wp-element-button ' . $class . '-link" href="' . $link . '"' . $target . '>' .
+		'<div class="' . $wrapper_class . 'wp-block-button is-style-' . $style . '">' .
+			'<a class="' . $link_class . 'wp-element-button" href="' . $link . '"' . $target . '>' .
 			$text .
 			$screen_reader .
 			'</a>' .

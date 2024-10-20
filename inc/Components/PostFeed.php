@@ -3,6 +3,9 @@
 namespace BuiltNorth\Utility\Components;
 
 use BuiltNorth\Utility\Components\Pagination;
+use BuiltNorth\Utility\Components\PostDisplay\PostGrid;
+use BuiltNorth\Utility\Components\PostDisplay\PostList;
+use BuiltNorth\Utility\Components\PostDisplay\PostSlider;
 
 use WP_Query;
 
@@ -17,8 +20,11 @@ class PostFeed
 			return self::render_placeholder();
 		}
 
-		$display_component = $attributes['displayAs'] === 'slider' ? 'Slider' : 'PostGrid';
-		$component_class = "BuiltNorth\\Utility\\Components\\{$display_component}";
+		$display_component = match ($attributes['displayAs']) {
+			'slider' => PostSlider::class,
+			'list' => PostList::class,
+			default => PostGrid::class,
+		};
 
 		$props = [
 			'attributes' => $attributes,
@@ -27,10 +33,10 @@ class PostFeed
 			'postType' => $post_type
 		];
 
-		$output = $component_class::render($props);
+		$output = $display_component::render($props);
 
 		if (!$attributes['displayAs'] && $posts->found_posts > ($attributes['postsPerPage'] ?? 9)) {
-			$output .= Component::Pagination();
+			$output .= Pagination::render();
 		}
 
 		wp_reset_postdata();
