@@ -92,12 +92,12 @@ class Image
 
 		// Include figure
 		if ($include_figure) {
-			return "<figure class='image__wrap image__wrap--" . esc_attr($wrap_class) . "'>
+			echo "<figure class='image__wrap image__wrap--" . esc_attr($wrap_class) . "'>
 				$img_tag
 				$caption 
 			</figure>";
 		} else {
-			return $img_tag;
+			echo $img_tag;
 		}
 	}
 }

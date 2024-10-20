@@ -14,7 +14,7 @@ class Button
 
 		// Add screen reader text
 		if ($screen_reader) {
-			$screen_reader = '<span class="sr-only">' . $screen_reader . '</span>';
+			$screen_reader = '<span class="screen-reader-text">' . $screen_reader . '</span>';
 		}
 
 		// Add target

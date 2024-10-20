@@ -8,13 +8,15 @@ class GetTerms
 	 * Get the terms
 	 */
 	public static function render(
+		$post_id = null,
 		$taxonomy = null,
 		$taxonomy_link = false,
 		$first_term_only = false
 	) {
 
+
 		// Get the terms
-		$terms = get_the_terms(get_the_ID(), $taxonomy);
+		$terms = get_the_terms($post_id, $taxonomy);
 
 		// Make sure some exist
 		if (!empty($terms) && !is_wp_error($terms)) :
