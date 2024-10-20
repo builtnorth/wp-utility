@@ -70,8 +70,6 @@ class PostFeed
 
 	private static function render_placeholder()
 	{
-		return '<div class="placeholder">' .
-			__('No posts found. Please add some, check the taxonomy filter settings, or remove this block.', 'built') .
-			'</div>';
+		// nothing to render
 	}
 }

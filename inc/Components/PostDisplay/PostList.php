@@ -7,8 +7,7 @@ class PostList extends PostDisplay
 	public static function render($props)
 	{
 		extract(self::getCommonProps($props));
-		$wrap_class = "list list-has-{$column_count}";
-		$styles = self::getWrapperAttributes($post_type, $wrap_class);
+		$styles = self::getWrapperAttributes($post_type, $display_type, $column_count);
 
 		ob_start();
 ?>

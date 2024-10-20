@@ -8,8 +8,7 @@ class PostSlider extends PostDisplay
 	{
 		extract(self::getCommonProps($props));
 		$posts_per_page = $attributes['postsPerPage'] ?? count($posts);
-		$wrap_class = "slider slider-has-{$posts_per_page}";
-		$styles = self::getWrapperAttributes($post_type, $wrap_class);
+		$styles = self::getWrapperAttributes($post_type, $display_type, $column_count);
 
 		ob_start();
 ?>

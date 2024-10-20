@@ -16,13 +16,15 @@ abstract class PostDisplay
 		$card_component = $props['CardComponent'] ?? null;
 		$post_type = $props['postType'] ?? 'post';
 		$column_count = $attributes['columnCount'] ?? 3;
+		$display_type = $attributes['displayAs'] ?? 'grid';
 
-		return compact('attributes', 'posts', 'card_component', 'post_type', 'column_count');
+
+		return compact('attributes', 'posts', 'card_component', 'post_type', 'column_count', 'display_type');
 	}
 
-	protected static function getWrapperAttributes($post_type, $wrap_class)
+	protected static function getWrapperAttributes($post_type, $display_type, $column_count)
 	{
-		return get_block_wrapper_attributes(['class' => "query-{$post_type} {$wrap_class}"]);
+		return get_block_wrapper_attributes(['class' => "{$post_type}-query {$post_type}-query--{$display_type} {$display_type} {$display_type}-has-{$column_count}"]);
 	}
 
 	protected static function renderPosts($posts, $card_component, $post_type)
