@@ -5,7 +5,7 @@ namespace BuiltNorth\Utility\Components;
 class Button
 {
 	public static function render(
-		$style = null,
+		$class = null,
 		$text = 'Button Text',
 		$link = '#',
 		$target = null,
@@ -23,8 +23,8 @@ class Button
 		}
 
 		echo
-		'<div class="wp-block-button ' . $style . '">' .
-			'<a class="wp-block-button__link wp-element-button" href="' . $link . '"' . $target . '>' .
+		'<div class="wp-block-button ' . $class . '">' .
+			'<a class="wp-block-button__link wp-element-button ' . $class . '-link" href="' . $link . '"' . $target . '>' .
 			$text .
 			$screen_reader .
 			'</a>' .

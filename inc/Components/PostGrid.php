@@ -14,14 +14,17 @@ class PostGrid
 		$column_count = $attributes['columnCount'] ?? 3;
 		$wrap_class = "grid grid-has-{$column_count}";
 
+		// Add Classes & Styles to Block Wrapper Attributes
+		$styles = get_block_wrapper_attributes(['class' =>  'query-' . $post_type . ' ' . $wrap_class]);
+
+
+
 		ob_start();
 ?>
-		<div class="<?php echo esc_attr($wrap_class); ?>">
+		<div <?php echo wp_kses_data($styles); ?>>
 			<?php if (!empty($posts)) : ?>
 				<?php foreach ($posts as $post) : ?>
-					<div key="<?php echo esc_attr($post->ID); ?>">
-						<?php echo call_user_func($card_component, $post, $post_type); ?>
-					</div>
+					<?php echo call_user_func($card_component, $post, $post_type); ?>
 				<?php endforeach; ?>
 			<?php endif; ?>
 		</div>

@@ -1,59 +1,70 @@
 <?php
 
+/**
+ * ------------------------------------------------------------------
+ * Get Terms
+ * ------------------------------------------------------------------
+ * 
+ * This class is used to get and render the terms for a post.
+ * 
+ * @package BuiltNorth\Utility
+ * @since 1.0.0
+ */
+
 namespace BuiltNorth\Utility\Utilities;
 
 class GetTerms
 {
 	/**
-	 * Get the terms
+	 * Get and render the terms
+	 *
+	 * @param int|null $post_id Post ID
+	 * @param string|null $taxonomy Taxonomy name
+	 * @param bool $taxonomy_link Whether to link the terms
+	 * @param bool $first_term_only Whether to display only the first term
+	 * @param string|null $class Additional class for the term list or item
+	 * @return void
 	 */
 	public static function render(
 		$post_id = null,
 		$taxonomy = null,
 		$taxonomy_link = false,
-		$first_term_only = false
+		$first_term_only = false,
+		$class = null
 	) {
-
-
-		// Get the terms
 		$terms = get_the_terms($post_id, $taxonomy);
 
-		// Make sure some exist
-		if (!empty($terms) && !is_wp_error($terms)) :
+		if (empty($terms) || is_wp_error($terms)) {
+			return;
+		}
 
-			// Check if only firt term is requested
-			if ($first_term_only) :
+		$terms_to_render = $first_term_only ? array_slice($terms, 0, 1) : $terms;
+		$wrapper_tag = $first_term_only ? 'span' : 'ul';
+		$item_tag = $first_term_only ? 'span' : 'li';
 
-				// First term only
-				$first_term = $terms[0];
-				$name = $first_term->name;
-				$link = get_term_link($first_term->term_id);
+		$wrapper_class = $class ? "{$class}__terms" : 'query__terms';
+		echo "<{$wrapper_tag} class='{$wrapper_class}'>";
 
-				// Add link if set
-				if ($taxonomy_link) {
-					echo '<span class="term-list__item"><a class="is-interior-link" href="' . $link . '">' . $name . '</a></span>';
-				} else {
-					echo '<span class="term-list__item">' . $name . '</span>';
-				}
+		foreach ($terms_to_render as $term) {
+			self::renderTerm($term, $taxonomy_link, $class, $item_tag);
+		}
 
-			else :
+		echo "</{$wrapper_tag}>";
+	}
 
-				echo '<ul class="term-list">';
-				foreach ($terms as $term) :
-					// Variables
-					$name = $term->name;
-					$link = get_term_link($term->term_id);
+	/**
+	 * Render a term
+	 */
+	protected static function renderTerm($term, $taxonomy_link, $class, $tag)
+	{
+		$name = $term->name;
+		$link = get_term_link($term->term_id);
+		$term_class = $class ? "{$class}__term" : 'query__term';
 
-					// Add link if set
-					if ($taxonomy_link) {
-						echo '<li class="term-list__item"><a class="is-interior-link" href="' . $link . '">' . $name . '</a></li>';
-					} else {
-						echo '<li class="term-list__item">' . $name . '</li>';
-					}
+		$content = $taxonomy_link
+			? "<a class='{$term_class}-link is-interior-link' href='{$link}'>{$name}</a>"
+			: $name;
 
-				endforeach;
-				echo '</ul>';
-			endif;
-		endif;
+		echo "<{$tag} class='{$term_class}'>{$content}</{$tag}>";
 	}
 }

@@ -17,7 +17,7 @@ class AccessibleCard
 
 		echo
 		'<a aria-hidden="true" tabindex="-1" href="' . $link . '"' . $target . ' class="accessible-card-link">' .
-			'<span class="sr-only">' . $screen_reader . '</span>' .
+			'<span class="screen-reader-text">' . $screen_reader . '</span>' .
 			'</a>';
 	}
 }
