@@ -2,7 +2,7 @@
 
 namespace BuiltNorth\Utility\Components;
 
-use BuiltNorth\Utility\Components\Pagination;
+use BuiltNorth\Utility\Component;
 use BuiltNorth\Utility\Components\PostDisplay\PostGrid;
 use BuiltNorth\Utility\Components\PostDisplay\PostList;
 use BuiltNorth\Utility\Components\PostDisplay\PostSlider;
@@ -35,8 +35,9 @@ class PostFeed
 
 		$output = $display_component::render($props);
 
-		if (!$attributes['displayAs'] && $posts->found_posts > ($attributes['postsPerPage'] ?? 9)) {
-			$output .= Pagination::render();
+		$posts_per_page = $attributes['postsPerPage'] ?? 9;
+		if ($attributes['showPagination'] && $posts->found_posts > $posts_per_page) {
+			$output .= Component::Pagination($posts);  // Pass the entire $posts object
 		}
 
 		wp_reset_postdata();
@@ -46,12 +47,15 @@ class PostFeed
 
 	private static function build_query_args($attributes, $post_type)
 	{
+		$paged = (get_query_var('paged')) ? get_query_var('paged') : ((get_query_var('page')) ? get_query_var('page') : 1);
+
 		$query_args = [
 			'post_type' => $post_type,
 			'posts_per_page' => $attributes['postsPerPage'] ?? 9,
 			'orderby' => $attributes['orderPostsBy'] ?? 'date',
 			'order' => $attributes['orderPostsDirection'] ?? 'DESC',
 			'post_status' => 'publish',
+			'paged' => $paged,
 		];
 
 		if (!empty($attributes['selectedTaxonomy']) && !empty($attributes['selectedTerms'])) {

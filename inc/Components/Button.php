@@ -34,7 +34,7 @@ class Button
 
 		echo
 		'<div class="' . $wrapper_class . 'wp-block-button is-style-' . $style . '">' .
-			'<a class="' . $link_class . 'wp-element-button" href="' . $link . '"' . $target . '>' .
+			'<a class="' . $link_class . 'wp-block-button__link wp-element-button" href="' . $link . '"' . $target . '>' .
 			$text .
 			$screen_reader .
 			'</a>' .

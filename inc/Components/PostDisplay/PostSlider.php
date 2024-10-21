@@ -8,7 +8,7 @@ class PostSlider extends PostDisplay
 	{
 		extract(self::getCommonProps($props));
 		$posts_per_page = $attributes['postsPerPage'] ?? count($posts);
-		$styles = self::getWrapperAttributes($post_type, $display_type, $column_count);
+		$styles = self::getWrapperAttributes($post_types, $display_type, $column_count);
 
 		ob_start();
 ?>
@@ -23,7 +23,7 @@ class PostSlider extends PostDisplay
 					<?php if (!empty($posts)) : ?>
 						<?php foreach ($posts as $post) : ?>
 							<div class="swiper-slide">
-								<?php echo call_user_func($card_component, $post, $post_type); ?>
+								<?php echo call_user_func($card_component, $posts, $post_types); ?>
 							</div>
 						<?php endforeach; ?>
 					<?php endif; ?>
