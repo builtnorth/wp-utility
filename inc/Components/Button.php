@@ -33,11 +33,11 @@ class Button
 		}
 
 		echo
-		'<div class="' . $wrapper_class . 'wp-block-button is-style-' . $style . '">' .
-			'<a class="' . $link_class . 'wp-block-button__link wp-element-button" href="' . $link . '"' . $target . '>' .
+		'<a class="' . $wrapper_class . 'polaris-button is-style-' . $style . '">' .
+			'<span class="' . $link_class . 'polaris-button__text" href="' . $link . '"' . $target . '>' .
 			$text .
 			$screen_reader .
-			'</a>' .
-			'</div>';
+			'</span>' .
+			'</a>';
 	}
 }

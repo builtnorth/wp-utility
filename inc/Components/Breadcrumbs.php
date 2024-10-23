@@ -4,13 +4,14 @@ namespace BuiltNorth\Utility\Components;
 
 class Breadcrumbs
 {
-	public static function render($show_on_front = null)
-	{
+	public static function render(
+		$show_on_front = null,
+		$class = 'breadcrumbs',
+		$separator = '&raquo;',
+		$home_title = 'Home',
+		$prefix = null,
+	) {
 		// Settings
-		$separator = '&raquo;';
-		$breadcrumbs_class = 'breadcrumbs';
-		$home_title = 'Home';
-		$prefix = null;
 
 		// If you have any custom post types with custom taxonomies, put the taxonomy name below (e.g. product_cat)
 		$custom_taxonomy = false;
@@ -22,18 +23,18 @@ class Breadcrumbs
 		if ((is_front_page() && ($show_on_front == true)) || (!is_front_page())) {
 
 			// Build the breadcrumbs
-			echo '<nav class="' . $breadcrumbs_class . '">';
-			echo '<ol class="' . $breadcrumbs_class . '__list">';
+			echo '<nav class="' . $class . '">';
+			echo '<ol class="' . $class . '__list">';
 
 			// Home page
-			echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--home">';
-			echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--home" href="' . get_home_url() . '" title="' . $home_title . '">' . $home_title . '</a>';
+			echo '<li class="' . $class . '__item ' . $class . '__item--home">';
+			echo '<a class="' . $class . '__link ' . $class . '__link--home" href="' . get_home_url() . '" title="' . $home_title . '">' . $home_title . '</a>';
 			echo '</li>';
-			echo '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
+			echo '<li class="' . $class . '__separator"> ' . $separator . ' </li>';
 
 			if (is_archive() && !is_tax() && !is_category() && !is_tag()) {
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current">';
-				echo '<strong class="' . $breadcrumbs_class . '__current">' . post_type_archive_title($prefix, false) . '</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current">';
+				echo '<strong class="' . $class . '__current">' . post_type_archive_title($prefix, false) . '</strong>';
 				echo '</li>';
 			} else if (is_archive() && is_tax() && !is_category() && !is_tag()) {
 				// If post is a custom post type
@@ -44,15 +45,15 @@ class Breadcrumbs
 					$post_type_object = get_post_type_object($post_type);
 					$post_type_archive = get_post_type_archive_link($post_type);
 
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--custom-post-type-' . $post_type . '">';
-					echo '<a class="' . $breadcrumbs_class . '__link" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</a>';
+					echo '<li class="' . $class . '__item ' . $class . '__item--custom-post-type-' . $post_type . '">';
+					echo '<a class="' . $class . '__link" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</a>';
 					echo '</li>';
-					echo '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
+					echo '<li class="' . $class . '__separator"> ' . $separator . ' </li>';
 				}
 
 				$custom_tax_name = get_queried_object()->name;
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current">';
-				echo '<strong class="' . $breadcrumbs_class . '__current">' . $custom_tax_name . '</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current">';
+				echo '<strong class="' . $class . '__current">' . $custom_tax_name . '</strong>';
 				echo '</li>';
 			} else if (is_single()) {
 				// If post is a custom post type
@@ -63,10 +64,10 @@ class Breadcrumbs
 					$post_type_object = get_post_type_object($post_type);
 					$post_type_archive = get_post_type_archive_link($post_type);
 
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--custom-post-type-' . $post_type . '">';
-					echo '<a class="' . $breadcrumbs_class . '__link" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</a>';
+					echo '<li class="' . $class . '__item ' . $class . '__item--custom-post-type-' . $post_type . '">';
+					echo '<a class="' . $class . '__link" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</a>';
 					echo '</li>';
-					echo '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
+					echo '<li class="' . $class . '__separator"> ' . $separator . ' </li>';
 				}
 
 				// Get post category info
@@ -84,8 +85,8 @@ class Breadcrumbs
 					// Loop through parent categories and store in variable $cat_display
 					$cat_display = '';
 					foreach ($cat_parents as $parents) {
-						$cat_display .= '<li class="' . $breadcrumbs_class . '__item">' . $parents . '</li>';
-						$cat_display .= '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
+						$cat_display .= '<li class="' . $class . '__item">' . $parents . '</li>';
+						$cat_display .= '<li class="' . $class . '__separator"> ' . $separator . ' </li>';
 					}
 				}
 
@@ -102,28 +103,28 @@ class Breadcrumbs
 				// Check if the post is in a category
 				if (!empty($last_category)) {
 					echo $cat_display;
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
+					echo '<li class="' . $class . '__item ' . $class . '__item--' . $post->ID . '">';
+					echo '<strong class="' . $class . '__current ' . $class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
 					echo '</li>';
 
 					// Else if post is in a custom taxonomy
 				} else if (!empty($cat_id)) {
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--cat-' . $cat_id . ' ' . $breadcrumbs_class . '__item--cat-' . $cat_nicename . '">';
-					echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--cat-' . $cat_id . ' ' . $breadcrumbs_class . '__link--cat-' . $cat_nicename . '" href="' . $cat_link . '" title="' . $cat_name . '">' . $cat_name . '</a>';
+					echo '<li class="' . $class . '__item ' . $class . '__item--cat-' . $cat_id . ' ' . $class . '__item--cat-' . $cat_nicename . '">';
+					echo '<a class="' . $class . '__link ' . $class . '__link--cat-' . $cat_id . ' ' . $class . '__link--cat-' . $cat_nicename . '" href="' . $cat_link . '" title="' . $cat_name . '">' . $cat_name . '</a>';
 					echo '</li>';
-					echo '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
+					echo '<li class="' . $class . '__separator"> ' . $separator . ' </li>';
+					echo '<li class="' . $class . '__item ' . $class . '__item--' . $post->ID . '">';
+					echo '<strong class="' . $class . '__current ' . $class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
 					echo '</li>';
 				} else {
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
+					echo '<li class="' . $class . '__item ' . $class . '__item--' . $post->ID . '">';
+					echo '<strong class="' . $class . '__current ' . $class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
 					echo '</li>';
 				}
 			} else if (is_category()) {
 				// Category page
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current">';
-				echo '<strong class="' . $breadcrumbs_class . '__current">' . single_cat_title('', false) . '</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current">';
+				echo '<strong class="' . $class . '__current">' . single_cat_title('', false) . '</strong>';
 				echo '</li>';
 			} else if (is_page()) {
 				// Standard page
@@ -137,23 +138,23 @@ class Breadcrumbs
 					// Parent page loop
 					if (!isset($parents)) $parents = null;
 					foreach ($anc as $ancestor) {
-						$parents .= '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--parent ' . $breadcrumbs_class . '__item--parent-' . $ancestor . '">';
-						$parents .= '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--parent ' . $breadcrumbs_class . '__link--parent-' . $ancestor . '" href="' . get_permalink($ancestor) . '" title="' . get_the_title($ancestor) . '">' . get_the_title($ancestor) . '</a>';
+						$parents .= '<li class="' . $class . '__item ' . $class . '__item--parent ' . $class . '__item--parent-' . $ancestor . '">';
+						$parents .= '<a class="' . $class . '__link ' . $class . '__link--parent ' . $class . '__link--parent-' . $ancestor . '" href="' . get_permalink($ancestor) . '" title="' . get_the_title($ancestor) . '">' . get_the_title($ancestor) . '</a>';
 						$parents .= '</li>';
-						$parents .= '<li class="' . $breadcrumbs_class . '__separator ' . $breadcrumbs_class . '__separator--' . $ancestor . '"> ' . $separator . ' </li>';
+						$parents .= '<li class="' . $class . '__separator ' . $class . '__separator--' . $ancestor . '"> ' . $separator . ' </li>';
 					}
 
 					// Display parent pages
 					echo $parents;
 
 					// Current page
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
+					echo '<li class="' . $class . '__item ' . $class . '__item--' . $post->ID . '">';
+					echo '<strong class="' . $class . '__current ' . $class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
 					echo '</li>';
 				} else {
 					// Just display current page if not parents
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '">' . get_the_title() . '</strong>';
+					echo '<li class="' . $class . '__item ' . $class . '__item--' . $post->ID . '">';
+					echo '<strong class="' . $class . '__current ' . $class . '__current--' . $post->ID . '">' . get_the_title() . '</strong>';
 					echo '</li>';
 				}
 			} else if (is_tag()) {
@@ -169,45 +170,45 @@ class Breadcrumbs
 				$get_term_name = $terms[0]->name;
 
 				// Display the tag name
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--tag-' . $get_term_id . ' ' . $breadcrumbs_class . '__item--tag-' . $get_term_slug . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--tag-' . $get_term_id . ' ' . $breadcrumbs_class . '__current--tag-' . $get_term_slug . '" title="Search results for: ' . $get_term_name . '">' . $get_term_name . '</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current ' . $class . '__item--tag-' . $get_term_id . ' ' . $class . '__item--tag-' . $get_term_slug . '">';
+				echo '<strong class="' . $class . '__current ' . $class . '__current--tag-' . $get_term_id . ' ' . $class . '__current--tag-' . $get_term_slug . '" title="Search results for: ' . $get_term_name . '">' . $get_term_name . '</strong>';
 				echo '</li>';
 			} elseif (is_day()) {
 				// Day archive
 
 				// Year link
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--year ' . $breadcrumbs_class . '__item--year-' . get_the_time('Y') . '">';
-				echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--year ' . $breadcrumbs_class . '__link--year-' . get_the_time('Y') . '" href="' . get_year_link(get_the_time('Y')) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</a>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--year ' . $class . '__item--year-' . get_the_time('Y') . '">';
+				echo '<a class="' . $class . '__link ' . $class . '__link--year ' . $class . '__link--year-' . get_the_time('Y') . '" href="' . get_year_link(get_the_time('Y')) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</a>';
 				echo '</li>';
-				echo '<li class="' . $breadcrumbs_class . '__separator ' . $breadcrumbs_class . '__separator--' . get_the_time('Y') . '"> ' . $separator . ' </li>';
+				echo '<li class="' . $class . '__separator ' . $class . '__separator--' . get_the_time('Y') . '"> ' . $separator . ' </li>';
 
 				// Month link
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--month ' . $breadcrumbs_class . '__item--month-' . get_the_time('m') . '">';
-				echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--month ' . $breadcrumbs_class . '__link--month-' . get_the_time('m') . '" href="' . get_month_link(get_the_time('Y'), get_the_time('m')) . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</a>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--month ' . $class . '__item--month-' . get_the_time('m') . '">';
+				echo '<a class="' . $class . '__link ' . $class . '__link--month ' . $class . '__link--month-' . get_the_time('m') . '" href="' . get_month_link(get_the_time('Y'), get_the_time('m')) . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</a>';
 				echo '</li>';
-				echo '<li class="' . $breadcrumbs_class . '__separator ' . $breadcrumbs_class . '__separator--' . get_the_time('m') . '"> ' . $separator . ' </li>';
+				echo '<li class="' . $class . '__separator ' . $class . '__separator--' . get_the_time('m') . '"> ' . $separator . ' </li>';
 
 				// Day display
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--' . get_the_time('j') . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . get_the_time('j') . '"> ' . get_the_time('jS') . ' ' . get_the_time('M') . ' Archives</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current ' . $class . '__item--' . get_the_time('j') . '">';
+				echo '<strong class="' . $class . '__current ' . $class . '__current--' . get_the_time('j') . '"> ' . get_the_time('jS') . ' ' . get_the_time('M') . ' Archives</strong>';
 				echo '</li>';
 			} else if (is_month()) {
 				// Month Archive
 
 				// Year link
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--year ' . $breadcrumbs_class . '__item--year-' . get_the_time('Y') . '">';
-				echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--year ' . $breadcrumbs_class . '__link--year-' . get_the_time('Y') . '" href="' . get_year_link(get_the_time('Y')) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</a>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--year ' . $class . '__item--year-' . get_the_time('Y') . '">';
+				echo '<a class="' . $class . '__link ' . $class . '__link--year ' . $class . '__link--year-' . get_the_time('Y') . '" href="' . get_year_link(get_the_time('Y')) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</a>';
 				echo '</li>';
-				echo '<li class="' . $breadcrumbs_class . '__separator ' . $breadcrumbs_class . '__separator--' . get_the_time('Y') . '"> ' . $separator . ' </li>';
+				echo '<li class="' . $class . '__separator ' . $class . '__separator--' . get_the_time('Y') . '"> ' . $separator . ' </li>';
 
 				// Month display
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--month ' . $breadcrumbs_class . '__item--month-' . get_the_time('m') . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--month-' . get_the_time('m') . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--month ' . $class . '__item--month-' . get_the_time('m') . '">';
+				echo '<strong class="' . $class . '__current ' . $class . '__current--month-' . get_the_time('m') . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</strong>';
 				echo '</li>';
 			} else if (is_year()) {
 				// Display year archive
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--current-' . get_the_time('Y') . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . get_the_time('Y') . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current ' . $class . '__item--current-' . get_the_time('Y') . '">';
+				echo '<strong class="' . $class . '__current ' . $class . '__current--' . get_the_time('Y') . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</strong>';
 				echo '</li>';
 			} else if (is_author()) {
 				// Auhor archive
@@ -217,18 +218,18 @@ class Breadcrumbs
 				$userdata = get_userdata($author);
 
 				// Display author name
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--current-' . $userdata->user_nicename . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $userdata->user_nicename . '" title="' . $userdata->display_name . '">' . 'Author: ' . $userdata->display_name . '</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current ' . $class . '__item--current-' . $userdata->user_nicename . '">';
+				echo '<strong class="' . $class . '__current ' . $class . '__current--' . $userdata->user_nicename . '" title="' . $userdata->display_name . '">' . 'Author: ' . $userdata->display_name . '</strong>';
 				echo '</li>';
 			} else if (get_query_var('paged')) {
 				// Paginated archives
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--current-' . get_query_var('paged') . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . get_query_var('paged') . '" title="Page ' . get_query_var('paged') . '">' . __('Page') . ' ' . get_query_var('paged') . '</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current ' . $class . '__item--current-' . get_query_var('paged') . '">';
+				echo '<strong class="' . $class . '__current ' . $class . '__current--' . get_query_var('paged') . '" title="Page ' . get_query_var('paged') . '">' . __('Page') . ' ' . get_query_var('paged') . '</strong>';
 				echo '</li>';
 			} else if (is_search()) {
 				// Search results page
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--current-' . get_search_query() . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . get_search_query() . '" title="Search results for: ' . get_search_query() . '">Search results for: ' . get_search_query() . '</strong>';
+				echo '<li class="' . $class . '__item ' . $class . '__item--current ' . $class . '__item--current-' . get_search_query() . '">';
+				echo '<strong class="' . $class . '__current ' . $class . '__current--' . get_search_query() . '" title="Search results for: ' . get_search_query() . '">Search results for: ' . get_search_query() . '</strong>';
 				echo '</li>';
 			} elseif (is_404()) {
 				// 404 page
