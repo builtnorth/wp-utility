@@ -12,7 +12,7 @@ class PostList extends PostDisplay
 		ob_start();
 ?>
 		<div <?php echo wp_kses_data($styles); ?>>
-			<?php echo self::renderPosts($posts, $card_component, $post_types); ?>
+			<?php echo self::renderPosts($posts, $card_component, $post_types, $attributes); ?>
 		</div>
 <?php
 		return ob_get_clean();

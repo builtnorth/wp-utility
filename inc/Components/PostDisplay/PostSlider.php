@@ -13,27 +13,29 @@ class PostSlider extends PostDisplay
 		ob_start();
 ?>
 		<div <?php echo wp_kses_data($styles); ?>>
-			<div class="swiper-container"
-				data-slides-per-view="<?php echo esc_attr($column_count); ?>"
-				data-loop="true"
-				data-pagination="true"
-				data-navigation="true"
-				data-space-between="32">
-				<div class="swiper-wrapper">
-					<?php if (!empty($posts)) : ?>
-						<?php foreach ($posts as $post) : ?>
-							<div class="swiper-slide">
-								<?php echo call_user_func($card_component, $posts, $post_types); ?>
-							</div>
-						<?php endforeach; ?>
-					<?php endif; ?>
-				</div>
-				<div class="swiper-pagination"></div>
-				<div class="swiper-button-next"></div>
-				<div class="swiper-button-prev"></div>
-			</div>
+			<swiper-container
+				slides-per-view="<?php echo esc_attr($column_count); ?>"
+				navigation="true"
+				pagination="true"
+				space-between="32">
+				<?php if (!empty($posts)) : ?>
+					<?php foreach ($posts as $post) : ?>
+						<swiper-slide>
+							<?php echo self::renderPosts([$post], $card_component, $post_types); ?>
+						</swiper-slide>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</swiper-container>
 		</div>
 <?php
 		return ob_get_clean();
 	}
+
+	public static function enqueue_swiper_files()
+	{
+		wp_enqueue_script('swiper-element', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-element-bundle.min.js', array(), null, true);
+	}
 }
+
+// Add action to enqueue Swiper files
+add_action('wp_enqueue_scripts', array('BuiltNorth\Utility\Components\PostDisplay\PostSlider', 'enqueue_swiper_files'));
