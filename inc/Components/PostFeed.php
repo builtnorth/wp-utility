@@ -3,15 +3,12 @@
 namespace BuiltNorth\Utility\Components;
 
 use BuiltNorth\Utility\Component;
-use BuiltNorth\Utility\Components\PostDisplay\PostGrid;
-use BuiltNorth\Utility\Components\PostDisplay\PostList;
-use BuiltNorth\Utility\Components\PostDisplay\PostSlider;
 
 use WP_Query;
 
 class PostFeed
 {
-	public static function render($attributes, $post_type, $card_component)
+	public static function render($attributes, $post_type, $card_component = null)
 	{
 		$query_args = self::build_query_args($attributes, $post_type);
 		$posts = new WP_Query($query_args);
@@ -21,16 +18,16 @@ class PostFeed
 		}
 
 		$display_component = match ($attributes['displayAs']) {
-			'slider' => PostSlider::class,
-			'list' => PostList::class,
-			default => PostGrid::class,
+			default => PostDisplay::class,
 		};
 
 		$props = [
 			'attributes' => $attributes,
-			'posts' => $posts->posts,
+			'query' => $posts,
 			'CardComponent' => $card_component,
-			'postType' => $post_type
+			'postType' => $post_type,
+			'displayAs' => $attributes['displayAs'] ?? 'grid',
+			'columnCount' => $attributes['columnCount'] ?? 3
 		];
 
 		$output = $display_component::render($props);

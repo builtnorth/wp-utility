@@ -5,12 +5,14 @@ namespace BuiltNorth\Utility\Components;
 class Button
 {
 	public static function render(
+		$button_type = 'a',
 		$class = null,
 		$style = 'default',
 		$text = 'Button Text',
 		$link = '#',
 		$target = null,
-		$screen_reader = null
+		$screen_reader = null,
+		$attributes = null
 	) {
 
 		// Add screen reader text
@@ -32,12 +34,17 @@ class Button
 			$link_class = null;
 		}
 
+		// Add attributes
+		if ($attributes) {
+			$attributes = ' ' . $attributes;
+		}
+
 		echo
-		'<a class="' . $wrapper_class . 'polaris-button is-style-' . $style . '">' .
+		'<' . $button_type . ' class="' . $wrapper_class . 'polaris-button is-style-' . $style . '"' . $attributes . '>' .
 			'<span class="' . $link_class . 'polaris-button__text" href="' . $link . '"' . $target . '>' .
 			$text .
 			$screen_reader .
 			'</span>' .
-			'</a>';
+			'</' . $button_type . '>';
 	}
 }
