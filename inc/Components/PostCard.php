@@ -5,43 +5,32 @@ namespace BuiltNorth\Utility\Components;
 /**
  * PostCard Component
  * 
- * Handles the rendering of individual post cards with efficient template loading
- * and caching mechanisms.
+ * Renders individual post cards with template lookup and fallback.
  */
 class PostCard
 {
 	/**
 	 * Render a single post card
 	 *
-	 * @param array $props {
-	 *     @type array  $attributes   Block attributes
-	 *     @type string $post_type    Post type
-	 *     @type string $display_type Display type (grid, list, slider)
-	 *     @type string $theme        Theme name for template lookup
-	 * }
+	 * @param string $post_type Post type
+	 * @param string $display_type Display type (grid, list, slider)
 	 * @return string Rendered post card HTML
 	 */
-	public static function render($props)
+	public static function render($post_type = 'post', $display_type = 'grid')
 	{
-		$post_type = $props['post_type'] ?? 'post';
-		$display_type = $props['display_as'] ?? 'grid';
-		$theme = $props['theme'] ?? 'polaris-blocks';
-
-		// Get the template
-		$template = self::getTemplate($post_type, $display_type, $theme);
+		$template = self::get_template($post_type, $display_type);
 
 		ob_start();
 ?>
 		<article class="post-card post-card--<?php echo esc_attr($post_type); ?> post-card--<?php echo esc_attr($display_type); ?>">
 			<?php
-			if (!$template) {
-				echo self::renderFallback();
-			} else {
-				// Render the template
+			if ($template) {
 				$blocks = parse_blocks($template->content);
 				foreach ($blocks as $block) {
 					echo render_block($block);
 				}
+			} else {
+				echo self::render_fallback();
 			}
 			?>
 		</article>
@@ -52,42 +41,35 @@ class PostCard
 	/**
 	 * Get the appropriate template for the post card
 	 */
-	protected static function getTemplate($post_type, $display_type, $theme)
+	private static function get_template($post_type, $display_type)
 	{
-		// Try display-specific template first
+		$template_slugs = [];
+
+		// Try display-specific template first (if not grid)
 		if ($display_type !== 'grid') {
-			$template_slug = $post_type . '-card-' . $display_type;
-			$template = get_block_template($template_slug, 'wp_template_part');
+			$template_slugs[] = "{$post_type}-card-{$display_type}";
+		}
 
-			if (!$template) {
-				$template = get_block_template($template_slug, 'wp_template_part', array('theme' => $theme));
-			}
+		// Try standard card template
+		$template_slugs[] = "{$post_type}-card";
 
+		// Fallback to generic post-card template
+		$template_slugs[] = 'post-card';
+
+		foreach ($template_slugs as $slug) {
+			$template = get_block_template($slug, 'wp_template_part');
 			if ($template) {
 				return $template;
 			}
 		}
 
-		// Try standard card template
-		$template_slug = $post_type . '-card';
-		$template = get_block_template($template_slug, 'wp_template_part');
-
-		if (!$template) {
-			$template = get_block_template($template_slug, 'wp_template_part', array('theme' => $theme));
-		}
-
-		// Fallback to generic post-card template
-		if (!$template) {
-			$template = get_block_template('post-card', 'wp_template_part', array('theme' => $theme));
-		}
-
-		return $template;
+		return null;
 	}
 
 	/**
 	 * Render a fallback card when no template is found
 	 */
-	protected static function renderFallback()
+	private static function render_fallback()
 	{
 		ob_start();
 	?>
