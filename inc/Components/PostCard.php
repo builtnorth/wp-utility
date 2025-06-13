@@ -19,10 +19,12 @@ class PostCard
 	public static function render($post_type = 'post', $display_type = 'grid')
 	{
 		$template = self::get_template($post_type, $display_type);
+		$permalink = get_permalink();
+		$title = get_the_title();
 
 		ob_start();
 ?>
-		<article class="post-card post-card--<?php echo esc_attr($post_type); ?> post-card--<?php echo esc_attr($display_type); ?>">
+		<article class="post-card post-card--<?php echo esc_attr($post_type); ?> post-card--<?php echo esc_attr($display_type); ?> has-accessible-card-link">
 			<?php
 			if ($template) {
 				$blocks = parse_blocks($template->content);
@@ -32,6 +34,14 @@ class PostCard
 			} else {
 				echo self::render_fallback();
 			}
+
+			// Render the accessible card link
+			AccessibleCard::render(
+				link: $permalink,
+				target: null,
+				screen_reader: 'Read more about ' . $title,
+				class: 'post-card'
+			);
 			?>
 		</article>
 	<?php
