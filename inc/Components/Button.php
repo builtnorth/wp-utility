@@ -8,6 +8,7 @@ class Button
 		$button_type = 'a',
 		$class = null,
 		$style = 'default',
+		$size = 'default',
 		$text = 'Button Text',
 		$link = '#',
 		$target = null,
@@ -34,17 +35,22 @@ class Button
 			$link_class = null;
 		}
 
+
+
+
 		// Add attributes
 		if ($attributes) {
 			$attributes = ' ' . $attributes;
 		}
 
-		echo
-		'<' . $button_type . ' class="' . $wrapper_class . 'polaris-button is-style-' . $style . '"' . $attributes . '>' .
-			'<span class="' . $link_class . 'polaris-button__text" href="' . $link . '"' . $target . '>' .
-			$text .
+		$target = $target ? ' ' . $target : '';
+		$attributes = $attributes ? ' ' . $attributes : '';
+
+		$button = '<' . $button_type . ' class="' . $wrapper_class . 'polaris-button is-style-' . $style . ' is-size-' . $size . '" href="' . $link . '"' . $target . $attributes . '>' .
+			'<span class="' . $link_class . 'polaris-button__text">' . $text . '</span>' .
 			$screen_reader .
-			'</span>' .
 			'</' . $button_type . '>';
+
+		echo $button;
 	}
 }

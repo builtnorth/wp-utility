@@ -33,6 +33,7 @@ class Image
 	public static function render(
 		$id = null,
 		$class = null,
+		$additional_classes = null,
 		$custom_alt = null,
 		$show_caption = null,
 		$lazy = true,
@@ -67,6 +68,9 @@ class Image
 		// add class
 		$class = $class ? esc_attr($class) : 'image';
 
+		// add additional classes
+		$additional_classes = $additional_classes ? $additional_classes : '';
+
 		// Add caption
 		$caption = ($show_caption === true && !empty($image_caption)) ? '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($image_caption) . '</figcaption>' : '';
 
@@ -79,7 +83,7 @@ class Image
 		// Build the img tag	
 		$img_tag = "<img
 			$lazy 
-			class='" . esc_attr($class) . "__img'
+			class='" . esc_attr($class) . " " . esc_attr($additional_classes) . "'
 			alt='" . esc_attr($alt) . "'
 			src='" . esc_url($src) . "'
 			srcset='" . esc_attr($srcset) . "'

@@ -16,9 +16,17 @@ namespace BuiltNorth\Utility\Utilities;
 class ArchiveUrl
 {
 	/**
+	 * Render the archive URL
+	 */
+	public static function render()
+	{
+		self::convert_url();
+	}
+
+	/**
 	 * Convert pretty permalink URLs to query string URLs
 	 */
-	public static function convert_url()
+	private static function convert_url()
 	{
 		if (!is_tax()) {
 			return;

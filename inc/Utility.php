@@ -29,7 +29,10 @@ class Utility
 	 */
 	public static function __callStatic($name, $arguments)
 	{
-		$utilityClass = __NAMESPACE__ . '\\Utilities\\' . ucfirst($name);
+		// Convert get_title to GetTitle
+		$className = str_replace('_', '', ucwords($name, '_'));
+		$utilityClass = __NAMESPACE__ . '\\Utilities\\' . $className;
+
 		if (class_exists($utilityClass)) {
 			return call_user_func_array([$utilityClass, 'render'], $arguments);
 		}
