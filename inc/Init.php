@@ -42,6 +42,7 @@ class Init
 	protected $classes = [
 		'Utility',
 		'Component',
+		'Helper',
 	];
 
 	/**

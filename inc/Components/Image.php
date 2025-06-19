@@ -78,7 +78,17 @@ class Image
 		$lazy = $lazy ? 'loading=lazy decoding=async' : 'loading=eager decoding=sync fetchpriority="high"';
 
 		// Add style to img attributes if provided
-		$style = $style ? " style='" . esc_attr($style) . "'" : '';
+		if ($style) {
+			// Handle both string and array styles
+			if (is_array($style)) {
+				$style_string = implode('; ', array_filter($style));
+			} else {
+				$style_string = $style;
+			}
+			$style_attr = " style='" . esc_attr($style_string) . "'";
+		} else {
+			$style_attr = '';
+		}
 
 		// Build the img tag	
 		$img_tag = "<img
@@ -90,7 +100,7 @@ class Image
 			sizes='(max-width: " . esc_attr($max_width) . ") 100vw, " . esc_attr($max_width) . "'
 			width='" . esc_attr($width) . "'
 			height='" . esc_attr($height) . "'
-			$style
+			$style_attr
 		/>";
 
 		// Include figure
