@@ -18,7 +18,6 @@ class PostCard
 	 */
 	public static function render($post_type = 'post', $display_type = 'grid')
 	{
-		$template = self::get_template($post_type, $display_type);
 		$permalink = get_permalink();
 		$title = get_the_title();
 
@@ -26,12 +25,9 @@ class PostCard
 ?>
 		<article class="post-card post-card--<?php echo esc_attr($post_type); ?> post-card--<?php echo esc_attr($display_type); ?> has-accessible-card-link">
 			<?php
-			if ($template) {
-				$blocks = parse_blocks($template->content);
-				foreach ($blocks as $block) {
-					echo render_block($block);
-				}
-			} else {
+			$template_found = self::render_template_part($post_type);
+
+			if (!$template_found) {
 				echo self::render_fallback();
 			}
 
@@ -49,31 +45,27 @@ class PostCard
 	}
 
 	/**
-	 * Get the appropriate template for the post card
+	 * Render template part for the post type
 	 */
-	private static function get_template($post_type, $display_type)
+	private static function render_template_part($post_type)
 	{
-		$template_slugs = [];
+		$slug = strtolower($post_type) . '-card';
+		$block = '<!-- wp:template-part {"slug":"' . esc_attr($slug) . '"} /-->';
+		$output = do_blocks($block);
 
-		// Try display-specific template first (if not grid)
-		if ($display_type !== 'grid') {
-			$template_slugs[] = "{$post_type}-card-{$display_type}";
+		// Remove the outer <section class="wp-block-template-part">...</section>
+		$output = preg_replace(
+			'/^<section class="wp-block-template-part[^"]*">(.*)<\\/section>$/s',
+			'$1',
+			trim($output)
+		);
+
+		if (trim($output)) {
+			echo $output;
+			return true;
 		}
 
-		// Try standard card template
-		$template_slugs[] = "{$post_type}-card";
-
-		// Fallback to generic post-card template
-		$template_slugs[] = 'post-card';
-
-		foreach ($template_slugs as $slug) {
-			$template = get_block_template($slug, 'wp_template_part');
-			if ($template) {
-				return $template;
-			}
-		}
-
-		return null;
+		return false;
 	}
 
 	/**

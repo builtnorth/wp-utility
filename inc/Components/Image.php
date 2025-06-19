@@ -83,7 +83,7 @@ class Image
 		// Build the img tag	
 		$img_tag = "<img
 			$lazy 
-			class='" . esc_attr($class) . " " . esc_attr($additional_classes) . "'
+			class='" . esc_attr($class) . "__img " . esc_attr($additional_classes) . "'
 			alt='" . esc_attr($alt) . "'
 			src='" . esc_url($src) . "'
 			srcset='" . esc_attr($srcset) . "'
