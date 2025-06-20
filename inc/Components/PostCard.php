@@ -51,18 +51,25 @@ class PostCard
 	{
 		$slug = strtolower($post_type) . '-card';
 		$block = '<!-- wp:template-part {"slug":"' . esc_attr($slug) . '"} /-->';
-		$output = do_blocks($block);
 
-		// Remove the outer <section class="wp-block-template-part">...</section>
-		$output = preg_replace(
-			'/^<section class="wp-block-template-part[^"]*">(.*)<\\/section>$/s',
-			'$1',
-			trim($output)
-		);
+		// Try to render the template part, but catch any errors
+		try {
+			$output = do_blocks($block);
 
-		if (trim($output)) {
-			echo $output;
-			return true;
+			// Remove the outer <section class="wp-block-template-part">...</section>
+			$output = preg_replace(
+				'/^<section class="wp-block-template-part[^"]*">(.*)<\\/section>$/s',
+				'$1',
+				trim($output)
+			);
+
+			if (trim($output)) {
+				echo $output;
+				return true;
+			}
+		} catch (Exception $e) {
+			// If template part fails, fall back to default card
+			return false;
 		}
 
 		return false;

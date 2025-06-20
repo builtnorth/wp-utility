@@ -23,8 +23,7 @@ class BlockGap
 				$block_gap_style = 'gap: var(--wp--preset--spacing--' . $spacing_value . ');';
 			}
 		} else {
-			// Apply default blockGap from theme.json
-			$block_gap_style = 'gap: var(--wp--preset--spacing--30);';
+			// Do nothing
 		}
 
 		return $block_gap_style;
