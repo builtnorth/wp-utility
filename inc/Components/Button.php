@@ -10,7 +10,7 @@ class Button
 		$style = 'default',
 		$size = 'default',
 		$text = 'Button Text',
-		$link = '#',
+		$link = null,
 		$target = null,
 		$screen_reader = null,
 		$attributes = null
@@ -35,8 +35,12 @@ class Button
 			$link_class = null;
 		}
 
-
-
+		if ($link) {
+			$link = 'href="' . $link . '"';
+		}
+		else {
+			$link = null;
+		}
 
 		// Add attributes
 		if ($attributes) {
@@ -46,10 +50,17 @@ class Button
 		$target = $target ? ' ' . $target : '';
 		$attributes = $attributes ? ' ' . $attributes : '';
 
-		$button = '<' . $button_type . ' class="' . $wrapper_class . 'polaris-button is-style-' . $style . ' is-size-' . $size . '" href="' . $link . '"' . $target . $attributes . '>' .
-			'<span class="' . $link_class . 'polaris-button__text">' . $text . '</span>' .
-			$screen_reader .
-			'</' . $button_type . '>';
+		// For button elements, don't wrap text in span to avoid click event issues
+		if ($button_type === 'button') {
+			$button = '<' . $button_type . ' class="' . $wrapper_class . 'polaris-button is-style-' . $style . ' is-size-' . $size . '"' . $link . $target . $attributes . '>' .
+				$text . $screen_reader .
+				'</' . $button_type . '>';
+		} else {
+			$button = '<' . $button_type . ' class="' . $wrapper_class . 'polaris-button is-style-' . $style . ' is-size-' . $size . '"' . $link . $target . $attributes . '>' .
+				'<span class="' . $link_class . 'polaris-button__text">' . $text . '</span>' .
+				$screen_reader .
+				'</' . $button_type . '>';
+		}
 
 		echo $button;
 	}
