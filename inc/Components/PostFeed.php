@@ -7,20 +7,32 @@ use WP_Query;
 
 class PostFeed
 {
+	private const DEFAULT_POSTS_PER_PAGE = 9;
+	private const DEFAULT_COLUMN_COUNT = 3;
+	private const DEFAULT_DISPLAY_TYPE = 'grid';
+	private const DEFAULT_SELECTION_MODE = 'auto';
+	private const DEFAULT_ORDER_BY = 'date';
+	private const DEFAULT_ORDER_DIRECTION = 'DESC';
+
 	public static function render($attributes, $post_type, $card_component = null)
 	{
 		$query = new WP_Query(self::build_query_args($attributes, $post_type));
 
 		if (!$query->have_posts()) {
-			return self::render_empty($post_type, $attributes);
+			return self::render_empty_state($post_type, $attributes);
 		}
 
 		$output = self::render_posts($query, $attributes, $post_type);
 
 		// Add pagination if needed (only for auto mode)
-		$selection_mode = $attributes['selectionMode'] ?? 'auto';
-		if (($attributes['showPagination'] ?? false) && $selection_mode === 'auto' && $query->found_posts > ($attributes['postsPerPage'] ?? 9)) {
+		$selection_mode = $attributes['selectionMode'] ?? self::DEFAULT_SELECTION_MODE;
+		if (($attributes['showPagination'] ?? false) && $selection_mode === 'auto' && $query->found_posts > ($attributes['postsPerPage'] ?? self::DEFAULT_POSTS_PER_PAGE)) {
 			$output .= Component::Pagination($query);
+		}
+
+		// Enqueue slider assets if needed
+		if (isset($attributes['displayAs']) && $attributes['displayAs'] === 'slider') {
+			wp_enqueue_script('swiper-slider');
 		}
 
 		wp_reset_postdata();
@@ -29,16 +41,14 @@ class PostFeed
 
 	private static function render_posts($query, $attributes, $post_type)
 	{
-		$display_type = $attributes['displayAs'] ?? 'grid';
-		$column_count = $attributes['columnCount'] ?? 3;
-		$selection_mode = $attributes['selectionMode'] ?? 'auto';
+		$display_type = $attributes['displayAs'] ?? self::DEFAULT_DISPLAY_TYPE;
+		$column_count = $attributes['columnCount'] ?? self::DEFAULT_COLUMN_COUNT;
+		$selection_mode = $attributes['selectionMode'] ?? self::DEFAULT_SELECTION_MODE;
+		$template_part_slug = $attributes['templatePartSlug'] ?? '';
 
 		$wrapper_classes = [
-			"{$post_type}-query",
-			"{$post_type}-query--{$display_type}",
-			"{$post_type}-query--{$selection_mode}",
-			$display_type,
-			"{$display_type}-has-{$column_count}"
+			"post-query post-query--{$post_type}",
+			"post-query--{$display_type}"
 		];
 
 		$wrapper_attrs = get_block_wrapper_attributes([
@@ -50,47 +60,72 @@ class PostFeed
 		]);
 
 		ob_start();
-?>
+		?>
 		<div <?php echo wp_kses_data($wrapper_attrs); ?>>
+			<?php if ($display_type === 'slider') : ?>
+				<swiper-container 
+					slides-per-view="1" 
+					loop="true" 
+					pagination="true" 
+					navigation="true" 
+					space-between="32px" 
+					grab-cursor="true" 
+					breakpoints='{
+						"768": {
+							"slidesPerView": <?php echo $column_count; ?>
+						}
+					}'
+				>
+			<?php endif; ?>
+			
 			<?php
 			while ($query->have_posts()) {
 				$query->the_post();
-				echo PostCard::render($post_type, $display_type);
+				
+				if ($display_type === 'slider') {
+					echo '<swiper-slide>';
+				}
+				
+				echo PostCard::render($post_type, $display_type, $template_part_slug);
+				
+				if ($display_type === 'slider') {
+					echo '</swiper-slide>';
+				}
 			}
 			?>
+			
+			<?php if ($display_type === 'slider') : ?>
+				</swiper-container>
+			<?php endif; ?>
 		</div>
-<?php
+		<?php
 		return ob_get_clean();
 	}
 
 	private static function build_query_args($attributes, $post_type)
 	{
-		$selection_mode = $attributes['selectionMode'] ?? 'auto';
+		$selection_mode = $attributes['selectionMode'] ?? self::DEFAULT_SELECTION_MODE;
 		$selected_posts = $attributes['selectedPosts'] ?? [];
 
 		// Handle manual selection mode
 		if ($selection_mode === 'manual' && !empty($selected_posts)) {
-			$query_args = [
+			return [
 				'post_type' => $post_type,
 				'post__in' => $selected_posts,
 				'orderby' => 'post__in', // Maintain order of selected posts
 				'posts_per_page' => count($selected_posts), // Show all selected posts
 				'post_status' => 'publish',
 			];
-			return $query_args;
 		}
 
-		// Handle automatic selection mode (existing logic)
-		//$paged = get_query_var('paged') ?: (get_query_var('page') ?: 1);
-		$paged = false;
-
+		// Handle automatic selection mode
 		$query_args = [
 			'post_type' => $post_type,
-			'posts_per_page' => $attributes['postsPerPage'] ?? 9,
-			'orderby' => $attributes['orderPostsBy'] ?? 'date',
-			'order' => $attributes['orderPostsDirection'] ?? 'DESC',
+			'posts_per_page' => $attributes['postsPerPage'] ?? self::DEFAULT_POSTS_PER_PAGE,
+			'orderby' => $attributes['orderPostsBy'] ?? self::DEFAULT_ORDER_BY,
+			'order' => $attributes['orderPostsDirection'] ?? self::DEFAULT_ORDER_DIRECTION,
 			'post_status' => 'publish',
-			'paged' => $paged,
+			'paged' => false, // Disabled pagination for now
 		];
 
 		// Add taxonomy filter if specified (only in auto mode)
@@ -105,9 +140,9 @@ class PostFeed
 		return $query_args;
 	}
 
-	private static function render_empty($post_type, $attributes = [])
+	private static function render_empty_state($post_type, $attributes = [])
 	{
-		$selection_mode = $attributes['selectionMode'] ?? 'auto';
+		$selection_mode = $attributes['selectionMode'] ?? self::DEFAULT_SELECTION_MODE;
 		$selected_posts = $attributes['selectedPosts'] ?? [];
 
 		// Different messages for different modes
