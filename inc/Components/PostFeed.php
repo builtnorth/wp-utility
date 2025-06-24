@@ -51,6 +51,11 @@ class PostFeed
 			"post-query--{$display_type}"
 		];
 
+		if ($display_type === 'grid') {
+			$wrapper_classes[] = "grid";
+			$wrapper_classes[] = "grid-has-{$column_count}";
+		}
+
 		$wrapper_attrs = get_block_wrapper_attributes([
 			'class' => implode(' ', $wrapper_classes),
 			'data-post-type' => $post_type,
