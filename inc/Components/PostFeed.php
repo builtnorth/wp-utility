@@ -24,12 +24,6 @@ class PostFeed
 
 		$output = self::render_posts($query, $attributes, $post_type);
 
-		// Add pagination if needed (only for auto mode)
-		$selection_mode = $attributes['selectionMode'] ?? self::DEFAULT_SELECTION_MODE;
-		if (($attributes['showPagination'] ?? false) && $selection_mode === 'auto' && $query->found_posts > ($attributes['postsPerPage'] ?? self::DEFAULT_POSTS_PER_PAGE)) {
-			$output .= Component::Pagination($query);
-		}
-
 		// Enqueue slider assets if needed
 		if (isset($attributes['displayAs']) && $attributes['displayAs'] === 'slider') {
 			wp_enqueue_script('swiper-slider');

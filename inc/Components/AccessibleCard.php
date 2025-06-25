@@ -22,7 +22,7 @@ class AccessibleCard
 		}
 
 		echo
-		'<a class="' . $class . 'accessible-card-link" aria-hidden="true" tabindex="-1" href="' . $link . '"' . $target . '>' .
+		'<a class="' . $class . 'accessible-card-link" href="' . $link . '"' . $target . '>' .
 			'<span class="screen-reader-text">' . $screen_reader . '</span>' .
 			'</a>';
 	}
