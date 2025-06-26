@@ -86,10 +86,8 @@ class Breadcrumbs
 		global $post;
 		$html = '';
 
-		// Add post type archive link if not a regular post
-		if (get_post_type() !== 'post') {
-			$html .= self::post_type_archive_breadcrumb();
-		}
+		// Add post type archive link for all post types
+		$html .= self::post_type_archive_breadcrumb();
 
 		// Add taxonomy breadcrumbs
 		$html .= self::post_taxonomy_breadcrumbs($post->ID);
@@ -156,8 +154,16 @@ class Breadcrumbs
 	 */
 	private static function category_archive_breadcrumbs()
 	{
+		$html = '';
 		$category = get_queried_object();
-		return self::get_taxonomy_hierarchy_breadcrumbs($category);
+		
+		// Add blog breadcrumb for post categories
+		if ($category && $category->taxonomy === 'category') {
+			$html .= self::get_blog_breadcrumb();
+		}
+		
+		$html .= self::get_taxonomy_hierarchy_breadcrumbs($category);
+		return $html;
 	}
 
 	/**
@@ -165,8 +171,16 @@ class Breadcrumbs
 	 */
 	private static function tag_archive_breadcrumbs()
 	{
+		$html = '';
 		$tag = get_queried_object();
-		return self::current_item($tag->name, 'tag-' . $tag->term_id . ' tag-' . $tag->slug);
+		
+		// Add blog breadcrumb for post tags
+		if ($tag && $tag->taxonomy === 'post_tag') {
+			$html .= self::get_blog_breadcrumb();
+		}
+		
+		$html .= self::current_item($tag->name, 'tag-' . $tag->term_id . ' tag-' . $tag->slug);
+		return $html;
 	}
 
 	/**
@@ -197,6 +211,9 @@ class Breadcrumbs
 	private static function date_archive_breadcrumbs()
 	{
 		$html = '';
+		
+		// Add blog breadcrumb for date archives (they're typically for posts)
+		$html .= self::get_blog_breadcrumb();
 
 		if (is_day()) {
 			// Year > Month > Day
@@ -253,10 +270,17 @@ class Breadcrumbs
 		global $author;
 		$userdata = get_userdata($author);
 
-		return self::current_item(
+		$html = '';
+		
+		// Add blog breadcrumb for author archives (they're typically for posts)
+		$html .= self::get_blog_breadcrumb();
+
+		$html .= self::current_item(
 			'Author: ' . $userdata->display_name,
 			'current-' . $userdata->user_nicename
 		);
+		
+		return $html;
 	}
 
 	/**
@@ -314,16 +338,66 @@ class Breadcrumbs
 	{
 		$post_type = get_post_type();
 		$post_type_object = get_post_type_object($post_type);
-		$post_type_archive = get_post_type_archive_link($post_type);
-
-		$html = self::breadcrumb_item(
-			$post_type_object->labels->name,
-			$post_type_archive,
-			'custom-post-type-' . $post_type,
-			false
-		);
+		
+		// Handle regular posts differently - use blog page if set
+		if ($post_type === 'post') {
+			$page_for_posts = get_option('page_for_posts');
+			if ($page_for_posts) {
+				$html = self::breadcrumb_item(
+					get_the_title($page_for_posts),
+					get_permalink($page_for_posts),
+					'post-type-' . $post_type,
+					false
+				);
+			} else {
+				// Fallback to generic "Blog" if no page is set
+				$html = self::breadcrumb_item(
+					'Blog',
+					get_home_url(),
+					'post-type-' . $post_type,
+					false
+				);
+			}
+		} else {
+			// Handle custom post types
+			$post_type_archive = get_post_type_archive_link($post_type);
+			$html = self::breadcrumb_item(
+				$post_type_object->labels->name,
+				$post_type_archive,
+				'post-type-' . $post_type,
+				false
+			);
+		}
+		
 		$html .= self::separator();
+		return $html;
+	}
 
+	/**
+	 * Generate blog breadcrumb item (for post-related archives)
+	 */
+	private static function get_blog_breadcrumb()
+	{
+		$page_for_posts = get_option('page_for_posts');
+		
+		if ($page_for_posts) {
+			$html = self::breadcrumb_item(
+				get_the_title($page_for_posts),
+				get_permalink($page_for_posts),
+				'blog',
+				false
+			);
+		} else {
+			// Fallback to generic "Blog" if no page is set
+			$html = self::breadcrumb_item(
+				'Blog',
+				get_home_url(),
+				'blog',
+				false
+			);
+		}
+		
+		$html .= self::separator();
 		return $html;
 	}
 
@@ -333,28 +407,40 @@ class Breadcrumbs
 	private static function post_taxonomy_breadcrumbs($post_id)
 	{
 		$html = '';
-
-		// Try categories first (for regular posts)
-		$categories = get_the_category($post_id);
-		if (!empty($categories)) {
-			$category = end($categories); // Get the last category
-			$html .= self::get_category_hierarchy_breadcrumbs($category);
-			return $html;
-		}
-
-		// Try custom taxonomies
 		$post_type = get_post_type($post_id);
-		$taxonomies = get_object_taxonomies($post_type, 'objects');
 
-		// Remove built-in taxonomies we've already handled
-		unset($taxonomies['category'], $taxonomies['post_tag']);
+		// For regular posts, prioritize categories
+		if ($post_type === 'post') {
+			$categories = get_the_category($post_id);
+			if (!empty($categories)) {
+				$category = self::get_primary_term($categories, 'category');
+				$html .= self::get_taxonomy_hierarchy_breadcrumbs($category, false);
+				return $html;
+			}
+		} else {
+			// For CPTs, prioritize custom taxonomies first, then categories
+			$taxonomies = get_object_taxonomies($post_type, 'objects');
 
-		foreach ($taxonomies as $taxonomy) {
-			$terms = get_the_terms($post_id, $taxonomy->name);
-			if ($terms && !is_wp_error($terms)) {
-				$term = self::get_primary_term($terms, $taxonomy->name);
-				$html .= self::get_taxonomy_hierarchy_breadcrumbs($term, false);
-				break; // Use first available taxonomy
+			// Remove built-in taxonomies for now
+			$custom_taxonomies = $taxonomies;
+			unset($custom_taxonomies['category'], $custom_taxonomies['post_tag']);
+
+			// Try custom taxonomies first
+			foreach ($custom_taxonomies as $taxonomy) {
+				$terms = get_the_terms($post_id, $taxonomy->name);
+				if ($terms && !is_wp_error($terms)) {
+					$term = self::get_primary_term($terms, $taxonomy->name);
+					$html .= self::get_taxonomy_hierarchy_breadcrumbs($term, false);
+					return $html;
+				}
+			}
+
+			// Fallback to categories if no custom taxonomies found
+			$categories = get_the_category($post_id);
+			if (!empty($categories)) {
+				$category = self::get_primary_term($categories, 'category');
+				$html .= self::get_taxonomy_hierarchy_breadcrumbs($category, false);
+				return $html;
 			}
 		}
 
@@ -366,6 +452,10 @@ class Breadcrumbs
 	 */
 	private static function get_primary_term($terms, $taxonomy)
 	{
+		if (empty($terms)) {
+			return null;
+		}
+
 		if (count($terms) === 1) {
 			return $terms[0];
 		}
@@ -434,27 +524,7 @@ class Breadcrumbs
 		return $html;
 	}
 
-	/**
-	 * Get hierarchical breadcrumbs for a category (specialized version)
-	 */
-	private static function get_category_hierarchy_breadcrumbs($category)
-	{
-		$html = '';
 
-		// Get category parents using WordPress built-in function
-		$cat_parents = rtrim(get_category_parents($category->term_id, true, ','), ',');
-		$parent_links = explode(',', $cat_parents);
-
-		// Remove the last item (current category) and add separators
-		array_pop($parent_links);
-
-		foreach ($parent_links as $parent_link) {
-			$html .= '<li class="' . self::$class . '__item">' . $parent_link . '</li>';
-			$html .= self::separator();
-		}
-
-		return $html;
-	}
 
 	/**
 	 * Generate a breadcrumb item
