@@ -19,9 +19,7 @@ class PostCard
 	 */
 	public static function render($post_type = 'post', $display_type = 'grid', $template_part_slug = '')
 	{
-		ob_start();
 		self::render_template_part($post_type, $template_part_slug);
-		return ob_get_clean();
 	}
 
 	/**
@@ -37,19 +35,7 @@ class PostCard
 		$slug = !empty($template_part_slug) ? $template_part_slug : strtolower($post_type) . '-card';
 		$block = '<!-- wp:template-part {"slug":"' . esc_attr($slug) . '"} /-->';
 
-		try {
-			$output = do_blocks($block);
-			// Remove the outer <section class="wp-block-template-part">...</section>
-			$output = preg_replace(
-				'/^<section class="wp-block-template-part[^"]*">(.*)<\/section>$/s',
-				'$1',
-				trim($output)
-			);
-			if (trim($output)) {
-				echo $output;
-			}
-		} catch (\Exception $e) {
-			// Do nothing if template part fails
-		}
+		$output = do_blocks($block);
+		echo $output;
 	}
 }
