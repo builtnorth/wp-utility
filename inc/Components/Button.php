@@ -57,7 +57,7 @@ class Button
 		$icon_left_html = '';
 		$icon_right_html = '';
 		if ($icon) {
-			$icon_class = 'polaris-button__icon polaris-button__icon--' . esc_attr($icon_position);
+			$icon_class = 'wp-block-polaris-button__icon wp-block-polaris-button__icon--' . esc_attr($icon_position);
 			$icon_html = '<span class="' . $icon_class . '">' . $icon . '</span>';
 			
 			if ($icon_position === 'right') {
@@ -69,15 +69,15 @@ class Button
 
 		// For button elements, don't wrap text in span to avoid click event issues
 		if ($button_type === 'button') {
-			$button = '<' . $button_type . ' class="' . $wrapper_class . 'polaris-button is-style-' . $style . ' is-size-' . $size . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
+			$button = '<' . $button_type . ' class="' . $wrapper_class . 'wp-block-polaris-button is-style-' . $style . ' is-size-' . $size . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
 				$icon_left_html .
 				$text . $screen_reader .
 				$icon_right_html .
 				'</' . $button_type . '>';
 		} else {
-			$button = '<' . $button_type . ' class="' . $wrapper_class . 'polaris-button is-style-' . $style . ' is-size-' . $size . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
+			$button = '<' . $button_type . ' class="' . $wrapper_class . 'wp-block-polaris-button is-style-' . $style . ' is-size-' . $size . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
 				$icon_left_html .
-				'<span class="' . $link_class . 'polaris-button__text">' . $text . '</span>' .
+				'<span class="' . $link_class . 'wp-block-polaris-button__text">' . $text . '</span>' .
 				$screen_reader .
 				$icon_right_html .
 				'</' . $button_type . '>';
