@@ -41,8 +41,8 @@ class PostFeed
 		$template_part_slug = $attributes['templatePartSlug'] ?? '';
 
 		$wrapper_classes = [
-			"post-query post-query--{$post_type}",
-			"post-query--{$display_type}"
+			"wp-block-polaris-post-feed--{$post_type}",
+			"wp-block-polaris-post-feed--{$display_type}"
 		];
 
 		if ($display_type === 'grid') {
