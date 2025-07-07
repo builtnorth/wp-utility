@@ -36,6 +36,7 @@ class ForegroundImage
 		$defaults = [
 			'class' => '',
 			'show_caption' => false,
+			'caption' => null,
 			'size' => 'large',
 			'max_width' => '600px',
 		];
@@ -46,6 +47,7 @@ class ForegroundImage
 			id: $background_image,
 			class: $options['class'],
 			show_caption: $options['show_caption'],
+			caption: $options['caption'],
 			size: $options['size'],
 			max_width: $options['max_width'],
 			style: $image_style,
