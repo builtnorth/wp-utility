@@ -44,13 +44,13 @@ class SectionBackground
 			$styles[] = "object-position: {$x}% {$y}%;";
 		}
 
-		$image_class = 'section-background';
+		$image_class = 'background';
 		$additional_classes = implode(' ', $classes);
 		$image_style = implode(' ', $styles);
 
 		ob_start();
 ?>
-		<div class="section-background">
+		<div class="background">
 			<?php
 			if ($use_featured_image) {
 				// Get the featured image ID

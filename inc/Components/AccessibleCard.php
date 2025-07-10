@@ -23,7 +23,7 @@ class AccessibleCard
 
 		echo
 		'<a class="' . $class . 'accessible-card-link" href="' . $link . '"' . $target . '>' .
-			'<span class="screen-reader-text">' . $screen_reader . '</span>' .
+			'<span class="screen-reader-only">' . $screen_reader . '</span>' .
 			'</a>';
 	}
 }

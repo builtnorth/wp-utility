@@ -57,15 +57,6 @@ class ArchiveUrl
 			$new_url = home_url("/{$post_type_slug}/");
 			$new_url = add_query_arg($taxonomy_slug, $term->slug, $new_url);
 
-			// Debug log
-			error_log('Archive URL Debug:');
-			error_log('Post Type: ' . $post_type);
-			error_log('Post Type Slug: ' . $post_type_slug);
-			error_log('Taxonomy: ' . $term->taxonomy);
-			error_log('Taxonomy Slug: ' . $taxonomy_slug);
-			error_log('Term Slug: ' . $term->slug);
-			error_log('New URL: ' . $new_url);
-
 			wp_safe_redirect($new_url);
 			exit;
 		}

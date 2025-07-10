@@ -41,7 +41,9 @@ class Image
 		$include_figure = true,
 		$size = 'full',
 		$max_width = '1200px',
-		$style = null
+		$style = null,
+		$caption = null,
+		$alt = null,
 	) {
 		// Check the image ID is not empty
 		if (empty($id)) {
@@ -72,7 +74,7 @@ class Image
 		$additional_classes = $additional_classes ? $additional_classes : '';
 
 		// Add caption
-		$caption = ($show_caption === true && !empty($image_caption)) ? '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($image_caption) . '</figcaption>' : '';
+		$caption = ($show_caption === true && !empty($caption)) ? '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($caption) . '</figcaption>' : '';
 
 		// Set lazy loading
 		$lazy = $lazy ? 'loading=lazy decoding=async' : 'loading=eager decoding=sync fetchpriority="high"';
