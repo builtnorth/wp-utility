@@ -524,7 +524,140 @@ class Breadcrumbs
 		return $html;
 	}
 
-
+	/**
+	 * Get breadcrumb data as array for schema generation
+	 *
+	 * @return array Breadcrumb data
+	 */
+	public static function get_breadcrumb_data() {
+		$breadcrumbs = [];
+		
+		// Add home breadcrumb
+		$breadcrumbs[] = [
+			'text' => 'Home',
+			'url' => home_url('/')
+		];
+		
+		// Generate breadcrumbs based on current page type
+		if (is_single()) {
+			global $post;
+			
+			// Add post type archive
+			$post_type_obj = get_post_type_object($post->post_type);
+			if ($post_type_obj && $post_type_obj->has_archive) {
+				$breadcrumbs[] = [
+					'text' => $post_type_obj->labels->name,
+					'url' => get_post_type_archive_link($post->post_type)
+				];
+			}
+			
+			// Add current post
+			$breadcrumbs[] = [
+				'text' => get_the_title(),
+				'url' => get_permalink()
+			];
+			
+		} elseif (is_page()) {
+			global $post;
+			
+			// Add parent pages
+			if ($post->post_parent) {
+				$ancestors = array_reverse(get_post_ancestors($post->ID));
+				foreach ($ancestors as $ancestor_id) {
+					$breadcrumbs[] = [
+						'text' => get_the_title($ancestor_id),
+						'url' => get_permalink($ancestor_id)
+					];
+				}
+			}
+			
+			// Add current page
+			$breadcrumbs[] = [
+				'text' => get_the_title(),
+				'url' => get_permalink()
+			];
+			
+		} elseif (is_archive()) {
+			if (is_category()) {
+				$category = get_queried_object();
+				$breadcrumbs[] = [
+					'text' => 'Blog',
+					'url' => get_permalink(get_option('page_for_posts'))
+				];
+				$breadcrumbs[] = [
+					'text' => $category->name,
+					'url' => get_term_link($category)
+				];
+			} elseif (is_tag()) {
+				$tag = get_queried_object();
+				$breadcrumbs[] = [
+					'text' => 'Blog',
+					'url' => get_permalink(get_option('page_for_posts'))
+				];
+				$breadcrumbs[] = [
+					'text' => $tag->name,
+					'url' => get_term_link($tag)
+				];
+			} elseif (is_tax()) {
+				$term = get_queried_object();
+				$post_type_obj = get_post_type_object(get_post_type());
+				if ($post_type_obj && $post_type_obj->has_archive) {
+					$breadcrumbs[] = [
+						'text' => $post_type_obj->labels->name,
+						'url' => get_post_type_archive_link(get_post_type())
+					];
+				}
+				$breadcrumbs[] = [
+					'text' => $term->name,
+					'url' => get_term_link($term)
+				];
+			} elseif (is_date()) {
+				$breadcrumbs[] = [
+					'text' => 'Blog',
+					'url' => get_permalink(get_option('page_for_posts'))
+				];
+				$breadcrumbs[] = [
+					'text' => get_the_date(),
+					'url' => get_permalink()
+				];
+			} elseif (is_author()) {
+				$author = get_queried_object();
+				$breadcrumbs[] = [
+					'text' => 'Blog',
+					'url' => get_permalink(get_option('page_for_posts'))
+				];
+				$breadcrumbs[] = [
+					'text' => $author->display_name,
+					'url' => get_author_posts_url($author->ID)
+				];
+			} else {
+				$post_type_obj = get_post_type_object(get_post_type());
+				if ($post_type_obj) {
+					$breadcrumbs[] = [
+						'text' => $post_type_obj->labels->name,
+						'url' => get_post_type_archive_link(get_post_type())
+					];
+				}
+			}
+		} elseif (is_search()) {
+			$breadcrumbs[] = [
+				'text' => 'Search Results',
+				'url' => get_search_link()
+			];
+		} elseif (is_404()) {
+			$breadcrumbs[] = [
+				'text' => 'Page Not Found',
+				'url' => home_url('/404')
+			];
+		} elseif (is_home() && get_option('page_for_posts')) {
+			$breadcrumbs[] = [
+				'text' => 'Blog',
+				'url' => get_permalink(get_option('page_for_posts'))
+			];
+		}
+		
+		return $breadcrumbs;
+	}
 
 	/**
 	 * Generate a breadcrumb item
