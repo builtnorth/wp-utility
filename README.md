@@ -4,8 +4,8 @@ Composer package containing utility items for use in WordPress themes and plugin
 
 ## Requirements
 
--   PHP >= 8.1
--   WordPress >= 6.4
+- PHP >= 8.1
+- WordPress >= 6.4
 
 ## Installation
 
@@ -15,24 +15,23 @@ This library is meant to be dropped into a theme or plugin via composer.
 2. In your main plugin file or theme's functions.php, add:
 
 ```php
-use BuiltNorth\Utility;
+use BuiltNorth\WPUtility;
 
-if (class_exists('BuiltNorth\Utility\Init')) {
+if (class_exists('BuiltNorth\WPUtility\Init')) {
     Utility\Init::instance();
 }
 ```
 
 ## Features
 
--   Images Setup:
-    -   Removes default/ core image sizes.
-    -   Adds custom image sizes via `add_image_size`. Image sizes are optimized for use with responsive images.
-    -   Adds custom image sizes to the block editor image size select dropdown.
-    -   Sets a reasonable max image width.
-    -   @todo allow customization/overriding of all of these settings.
--   Components:
-
-    -   Responsive image helper
+- Images Setup:
+    - Removes default/ core image sizes.
+    - Adds custom image sizes via `add_image_size`. Image sizes are optimized for use with responsive images.
+    - Adds custom image sizes to the block editor image size select dropdown.
+    - Sets a reasonable max image width.
+    - @todo allow customization/overriding of all of these settings.
+- Components:
+    - Responsive image helper
 
         ```
         Component::Image(
