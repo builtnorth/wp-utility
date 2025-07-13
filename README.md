@@ -15,10 +15,9 @@ This library is meant to be dropped into a theme or plugin via composer.
 2. In your main plugin file or theme's functions.php, add:
 
 ```php
-use BuiltNorth\WPUtility;
-
-if (class_exists('BuiltNorth\WPUtility\Init')) {
-    Utility\Init::instance();
+if (class_exists('BuiltNorth\WPUtility\App')) {
+   $utility = BuiltNorth\WPUtility\App::instance();
+   $utility->boot();
 }
 ```
 
