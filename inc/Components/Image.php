@@ -11,7 +11,7 @@
  * @since BuiltNorth/Utility 1.0.0
  **/
 
-namespace BuiltNorth\Utility\Components;
+namespace BuiltNorth\WPUtility\Components;
 
 class Image
 {
@@ -33,6 +33,7 @@ class Image
 	public static function render(
 		$id = null,
 		$class = null,
+		$additional_classes = null,
 		$custom_alt = null,
 		$show_caption = null,
 		$lazy = true,
@@ -40,7 +41,9 @@ class Image
 		$include_figure = true,
 		$size = 'full',
 		$max_width = '1200px',
-		$style = null
+		$style = null,
+		$caption = null,
+		$alt = null,
 	) {
 		// Check the image ID is not empty
 		if (empty($id)) {
@@ -64,40 +67,52 @@ class Image
 
 		// Set alt text
 		$alt = $custom_alt ?: $image_alt;
-
 		// add class
-		$class = $class ? " class='" . esc_attr($class) . "'" : '';
+		$class = $class ? esc_attr($class) : 'image';
+
+		// add additional classes
+		$additional_classes = $additional_classes ? $additional_classes : '';
 
 		// Add caption
-		$caption = ($show_caption === true && !empty($image_caption)) ? "<figcaption>" . esc_html($image_caption) . "</figcaption>" : '';
+		$caption = ($show_caption === true && !empty($caption)) ? '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($caption) . '</figcaption>' : '';
 
 		// Set lazy loading
 		$lazy = $lazy ? 'loading=lazy decoding=async' : 'loading=eager decoding=sync fetchpriority="high"';
 
 		// Add style to img attributes if provided
-		$style = $style ? " style='" . esc_attr($style) . "'" : '';
+		if ($style) {
+			// Handle both string and array styles
+			if (is_array($style)) {
+				$style_string = implode('; ', array_filter($style));
+			} else {
+				$style_string = $style;
+			}
+			$style_attr = " style='" . esc_attr($style_string) . "'";
+		} else {
+			$style_attr = '';
+		}
 
 		// Build the img tag	
 		$img_tag = "<img
 			$lazy 
-			$class 
+			class='" . esc_attr($class) . "__img " . esc_attr($additional_classes) . "'
 			alt='" . esc_attr($alt) . "'
 			src='" . esc_url($src) . "'
 			srcset='" . esc_attr($srcset) . "'
 			sizes='(max-width: " . esc_attr($max_width) . ") 100vw, " . esc_attr($max_width) . "'
 			width='" . esc_attr($width) . "'
 			height='" . esc_attr($height) . "'
-			$style
+			$style_attr
 		/>";
 
 		// Include figure
 		if ($include_figure) {
-			return "<figure class='image__wrap image__wrap--" . esc_attr($wrap_class) . "'>
+			echo "<figure class='" . esc_attr($class) . "__figure'>
 				$img_tag
 				$caption 
 			</figure>";
 		} else {
-			return $img_tag;
+			echo $img_tag;
 		}
 	}
 }

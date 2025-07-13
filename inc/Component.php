@@ -11,12 +11,12 @@
  * @since 2.0.0
  */
 
-namespace BuiltNorth\Utility;
+namespace BuiltNorth\WPUtility;
 
 /**
  * Don't load directly.
  */
-defined('ABSPATH') || exit;
+defined('ABSPATH') || defined('WP_CLI') || exit;
 
 class Component
 {

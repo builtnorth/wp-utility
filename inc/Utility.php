@@ -11,12 +11,12 @@
  * @since 2.0.0
  */
 
-namespace BuiltNorth\Utility;
+namespace BuiltNorth\WPUtility;
 
 /**
  * Don't load directly.
  */
-defined('ABSPATH') || exit;
+defined('ABSPATH') || defined('WP_CLI') || exit;
 
 class Utility
 {
@@ -29,7 +29,10 @@ class Utility
 	 */
 	public static function __callStatic($name, $arguments)
 	{
-		$utilityClass = __NAMESPACE__ . '\\Utilities\\' . ucfirst($name);
+		// Convert get_title to GetTitle
+		$className = str_replace('_', '', ucwords($name, '_'));
+		$utilityClass = __NAMESPACE__ . '\\Utilities\\' . $className;
+
 		if (class_exists($utilityClass)) {
 			return call_user_func_array([$utilityClass, 'render'], $arguments);
 		}

@@ -1,244 +1,710 @@
 <?php
 
-namespace BuiltNorth\Utility\Components;
+namespace BuiltNorth\WPUtility\Components;
 
 class Breadcrumbs
 {
-	public static function render($show_on_front = null)
+	private static $class;
+	private static $separator;
+	private static $home_title;
+
+	public static function render(
+		$show_on_front = null,
+		$class = 'breadcrumbs',
+		$separator = '&raquo;',
+		$home_title = 'Home',
+		$prefix = null,
+	) {
+		// Initialize class properties
+		self::$class = $class;
+		self::$separator = $separator;
+		self::$home_title = $home_title;
+
+		// Don't display on homepage unless specifically requested
+		if (is_front_page() && !$show_on_front) {
+			return;
+		}
+
+		// Start breadcrumb navigation
+		echo self::open_nav();
+		echo self::home_breadcrumb();
+
+		// Generate appropriate breadcrumbs based on current page type
+		if (is_single()) {
+			echo self::single_post_breadcrumbs($prefix);
+		} elseif (is_page()) {
+			echo self::page_breadcrumbs();
+		} elseif (is_archive()) {
+			echo self::archive_breadcrumbs($prefix);
+		} elseif (is_search()) {
+			echo self::search_breadcrumbs();
+		} elseif (is_404()) {
+			echo self::error_breadcrumbs();
+		} elseif (is_home() && get_option('page_for_posts')) {
+			echo self::blog_home_breadcrumbs();
+		}
+
+		echo self::close_nav();
+	}
+
+	/**
+	 * Generate opening navigation HTML
+	 */
+	private static function open_nav()
 	{
-		// Settings
-		$separator = '&raquo;';
-		$breadcrumbs_class = 'breadcrumbs';
-		$home_title = 'Home';
-		$prefix = null;
+		return '<nav class="' . self::$class . '"><ol class="' . self::$class . '__list">';
+	}
 
-		// If you have any custom post types with custom taxonomies, put the taxonomy name below (e.g. product_cat)
-		$custom_taxonomy = false;
+	/**
+	 * Generate closing navigation HTML
+	 */
+	private static function close_nav()
+	{
+		return '</ol></nav>';
+	}
 
-		// Get the query & post information
-		global $post, $wp_query;
+	/**
+	 * Generate home breadcrumb
+	 */
+	private static function home_breadcrumb()
+	{
+		$html = self::breadcrumb_item(
+			self::$home_title,
+			get_home_url(),
+			'home',
+			false
+		);
+		$html .= self::separator();
+		return $html;
+	}
 
-		// Do not display on the homepage
-		if ((is_front_page() && ($show_on_front == true)) || (!is_front_page())) {
+	/**
+	 * Generate breadcrumbs for single posts
+	 */
+	private static function single_post_breadcrumbs($prefix)
+	{
+		global $post;
+		$html = '';
 
-			// Build the breadcrumbs
-			echo '<nav class="' . $breadcrumbs_class . '">';
-			echo '<ol class="' . $breadcrumbs_class . '__list">';
+		// Add post type archive link for all post types
+		$html .= self::post_type_archive_breadcrumb();
 
-			// Home page
-			echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--home">';
-			echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--home" href="' . get_home_url() . '" title="' . $home_title . '">' . $home_title . '</a>';
-			echo '</li>';
-			echo '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
+		// Add taxonomy breadcrumbs
+		$html .= self::post_taxonomy_breadcrumbs($post->ID);
 
-			if (is_archive() && !is_tax() && !is_category() && !is_tag()) {
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current">';
-				echo '<strong class="' . $breadcrumbs_class . '__current">' . post_type_archive_title($prefix, false) . '</strong>';
-				echo '</li>';
-			} else if (is_archive() && is_tax() && !is_category() && !is_tag()) {
-				// If post is a custom post type
-				$post_type = get_post_type();
+		// Add current post
+		$html .= self::current_item(get_the_title(), $post->ID);
 
-				// If it is a custom post type display name and link
-				if ($post_type != 'post') {
-					$post_type_object = get_post_type_object($post_type);
-					$post_type_archive = get_post_type_archive_link($post_type);
+		return $html;
+	}
 
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--custom-post-type-' . $post_type . '">';
-					echo '<a class="' . $breadcrumbs_class . '__link" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</a>';
-					echo '</li>';
-					echo '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
+	/**
+	 * Generate breadcrumbs for pages
+	 */
+	private static function page_breadcrumbs()
+	{
+		global $post;
+		$html = '';
+
+		// Handle parent pages
+		if ($post->post_parent) {
+			$ancestors = array_reverse(get_post_ancestors($post->ID));
+
+			foreach ($ancestors as $ancestor_id) {
+				$html .= self::breadcrumb_item(
+					get_the_title($ancestor_id),
+					get_permalink($ancestor_id),
+					'parent parent-' . $ancestor_id,
+					false
+				);
+				$html .= self::separator();
+			}
+		}
+
+		// Add current page
+		$html .= self::current_item(get_the_title(), $post->ID);
+
+		return $html;
+	}
+
+	/**
+	 * Generate breadcrumbs for archive pages
+	 */
+	private static function archive_breadcrumbs($prefix)
+	{
+		if (is_category()) {
+			return self::category_archive_breadcrumbs();
+		} elseif (is_tag()) {
+			return self::tag_archive_breadcrumbs();
+		} elseif (is_tax()) {
+			return self::taxonomy_archive_breadcrumbs();
+		} elseif (is_date()) {
+			return self::date_archive_breadcrumbs();
+		} elseif (is_author()) {
+			return self::author_archive_breadcrumbs();
+		} elseif (get_query_var('paged')) {
+			return self::pagination_breadcrumbs();
+		} else {
+			return self::post_type_archive_breadcrumbs($prefix);
+		}
+	}
+
+	/**
+	 * Generate breadcrumbs for category archives
+	 */
+	private static function category_archive_breadcrumbs()
+	{
+		$html = '';
+		$category = get_queried_object();
+		
+		// Add blog breadcrumb for post categories
+		if ($category && $category->taxonomy === 'category') {
+			$html .= self::get_blog_breadcrumb();
+		}
+		
+		$html .= self::get_taxonomy_hierarchy_breadcrumbs($category);
+		return $html;
+	}
+
+	/**
+	 * Generate breadcrumbs for tag archives
+	 */
+	private static function tag_archive_breadcrumbs()
+	{
+		$html = '';
+		$tag = get_queried_object();
+		
+		// Add blog breadcrumb for post tags
+		if ($tag && $tag->taxonomy === 'post_tag') {
+			$html .= self::get_blog_breadcrumb();
+		}
+		
+		$html .= self::current_item($tag->name, 'tag-' . $tag->term_id . ' tag-' . $tag->slug);
+		return $html;
+	}
+
+	/**
+	 * Generate breadcrumbs for custom taxonomy archives
+	 */
+	private static function taxonomy_archive_breadcrumbs()
+	{
+		$html = '';
+
+		// Add post type archive if not 'post'
+		$post_type = get_post_type();
+		if ($post_type && $post_type !== 'post') {
+			$html .= self::post_type_archive_breadcrumb();
+		}
+
+		// Add taxonomy hierarchy
+		$term = get_queried_object();
+		if ($term instanceof \WP_Term) {
+			$html .= self::get_taxonomy_hierarchy_breadcrumbs($term);
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Generate breadcrumbs for date archives
+	 */
+	private static function date_archive_breadcrumbs()
+	{
+		$html = '';
+		
+		// Add blog breadcrumb for date archives (they're typically for posts)
+		$html .= self::get_blog_breadcrumb();
+
+		if (is_day()) {
+			// Year > Month > Day
+			$html .= self::breadcrumb_item(
+				get_the_time('Y') . ' Archives',
+				get_year_link(get_the_time('Y')),
+				'year year-' . get_the_time('Y'),
+				false
+			);
+			$html .= self::separator();
+
+			$html .= self::breadcrumb_item(
+				get_the_time('M') . ' Archives',
+				get_month_link(get_the_time('Y'), get_the_time('m')),
+				'month month-' . get_the_time('m'),
+				false
+			);
+			$html .= self::separator();
+
+			$html .= self::current_item(
+				get_the_time('jS') . ' ' . get_the_time('M') . ' Archives',
+				get_the_time('j')
+			);
+		} elseif (is_month()) {
+			// Year > Month
+			$html .= self::breadcrumb_item(
+				get_the_time('Y') . ' Archives',
+				get_year_link(get_the_time('Y')),
+				'year year-' . get_the_time('Y'),
+				false
+			);
+			$html .= self::separator();
+
+			$html .= self::current_item(
+				get_the_time('M') . ' Archives',
+				'month month-' . get_the_time('m')
+			);
+		} elseif (is_year()) {
+			// Year only
+			$html .= self::current_item(
+				get_the_time('Y') . ' Archives',
+				'current-' . get_the_time('Y')
+			);
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Generate breadcrumbs for author archives
+	 */
+	private static function author_archive_breadcrumbs()
+	{
+		global $author;
+		$userdata = get_userdata($author);
+
+		$html = '';
+		
+		// Add blog breadcrumb for author archives (they're typically for posts)
+		$html .= self::get_blog_breadcrumb();
+
+		$html .= self::current_item(
+			'Author: ' . $userdata->display_name,
+			'current-' . $userdata->user_nicename
+		);
+		
+		return $html;
+	}
+
+	/**
+	 * Generate breadcrumbs for paginated archives
+	 */
+	private static function pagination_breadcrumbs()
+	{
+		$page = get_query_var('paged');
+		return self::current_item(
+			__('Page') . ' ' . $page,
+			'current-' . $page
+		);
+	}
+
+	/**
+	 * Generate breadcrumbs for post type archives
+	 */
+	private static function post_type_archive_breadcrumbs($prefix)
+	{
+		return self::current_item(post_type_archive_title($prefix, false));
+	}
+
+	/**
+	 * Generate breadcrumbs for search results
+	 */
+	private static function search_breadcrumbs()
+	{
+		$query = get_search_query();
+		return self::current_item(
+			'Search results for: ' . $query,
+			'current-' . $query
+		);
+	}
+
+	/**
+	 * Generate breadcrumbs for 404 pages
+	 */
+	private static function error_breadcrumbs()
+	{
+		return '<li>Error 404</li>';
+	}
+
+	/**
+	 * Generate breadcrumbs for blog home page
+	 */
+	private static function blog_home_breadcrumbs()
+	{
+		return '<li>' . get_the_title(get_option('page_for_posts')) . '</li>';
+	}
+
+	/**
+	 * Generate post type archive breadcrumb item
+	 */
+	private static function post_type_archive_breadcrumb()
+	{
+		$post_type = get_post_type();
+		$post_type_object = get_post_type_object($post_type);
+		
+		// Handle regular posts differently - use blog page if set
+		if ($post_type === 'post') {
+			$page_for_posts = get_option('page_for_posts');
+			if ($page_for_posts) {
+				$html = self::breadcrumb_item(
+					get_the_title($page_for_posts),
+					get_permalink($page_for_posts),
+					'post-type-' . $post_type,
+					false
+				);
+			} else {
+				// Fallback to generic "Blog" if no page is set
+				$html = self::breadcrumb_item(
+					'Blog',
+					get_home_url(),
+					'post-type-' . $post_type,
+					false
+				);
+			}
+		} else {
+			// Handle custom post types
+			$post_type_archive = get_post_type_archive_link($post_type);
+			$html = self::breadcrumb_item(
+				$post_type_object->labels->name,
+				$post_type_archive,
+				'post-type-' . $post_type,
+				false
+			);
+		}
+		
+		$html .= self::separator();
+		return $html;
+	}
+
+	/**
+	 * Generate blog breadcrumb item (for post-related archives)
+	 */
+	private static function get_blog_breadcrumb()
+	{
+		$page_for_posts = get_option('page_for_posts');
+		
+		if ($page_for_posts) {
+			$html = self::breadcrumb_item(
+				get_the_title($page_for_posts),
+				get_permalink($page_for_posts),
+				'blog',
+				false
+			);
+		} else {
+			// Fallback to generic "Blog" if no page is set
+			$html = self::breadcrumb_item(
+				'Blog',
+				get_home_url(),
+				'blog',
+				false
+			);
+		}
+		
+		$html .= self::separator();
+		return $html;
+	}
+
+	/**
+	 * Get taxonomy breadcrumbs for a single post
+	 */
+	private static function post_taxonomy_breadcrumbs($post_id)
+	{
+		$html = '';
+		$post_type = get_post_type($post_id);
+
+		// For regular posts, prioritize categories
+		if ($post_type === 'post') {
+			$categories = get_the_category($post_id);
+			if (!empty($categories)) {
+				$category = self::get_primary_term($categories, 'category');
+				$html .= self::get_taxonomy_hierarchy_breadcrumbs($category, false);
+				return $html;
+			}
+		} else {
+			// For CPTs, prioritize custom taxonomies first, then categories
+			$taxonomies = get_object_taxonomies($post_type, 'objects');
+
+			// Remove built-in taxonomies for now
+			$custom_taxonomies = $taxonomies;
+			unset($custom_taxonomies['category'], $custom_taxonomies['post_tag']);
+
+			// Try custom taxonomies first
+			foreach ($custom_taxonomies as $taxonomy) {
+				$terms = get_the_terms($post_id, $taxonomy->name);
+				if ($terms && !is_wp_error($terms)) {
+					$term = self::get_primary_term($terms, $taxonomy->name);
+					$html .= self::get_taxonomy_hierarchy_breadcrumbs($term, false);
+					return $html;
 				}
-
-				$custom_tax_name = get_queried_object()->name;
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current">';
-				echo '<strong class="' . $breadcrumbs_class . '__current">' . $custom_tax_name . '</strong>';
-				echo '</li>';
-			} else if (is_single()) {
-				// If post is a custom post type
-				$post_type = get_post_type();
-
-				// If it is a custom post type display name and link
-				if ($post_type != 'post') {
-					$post_type_object = get_post_type_object($post_type);
-					$post_type_archive = get_post_type_archive_link($post_type);
-
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--custom-post-type-' . $post_type . '">';
-					echo '<a class="' . $breadcrumbs_class . '__link" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</a>';
-					echo '</li>';
-					echo '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
-				}
-
-				// Get post category info
-				$category = get_the_category();
-
-				if (!empty($category)) {
-					// Get last category post is in
-					$end = array_values($category);
-					$last_category = end($end);
-
-					// Get parent any categories and create array
-					$get_cat_parents = rtrim(get_category_parents($last_category->term_id, true, ','), ',');
-					$cat_parents = explode(',', $get_cat_parents);
-
-					// Loop through parent categories and store in variable $cat_display
-					$cat_display = '';
-					foreach ($cat_parents as $parents) {
-						$cat_display .= '<li class="' . $breadcrumbs_class . '__item">' . $parents . '</li>';
-						$cat_display .= '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
-					}
-				}
-
-				// If it's a custom post type within a custom taxonomy
-				$taxonomy_exists = taxonomy_exists($custom_taxonomy);
-				if (empty($last_category) && !empty($custom_taxonomy) && $taxonomy_exists) {
-					$taxonomy_terms = get_the_terms($post->ID, $custom_taxonomy);
-					$cat_id = $taxonomy_terms[0]->term_id;
-					$cat_nicename = $taxonomy_terms[0]->slug;
-					$cat_link = get_term_link($taxonomy_terms[0]->term_id, $custom_taxonomy);
-					$cat_name = $taxonomy_terms[0]->name;
-				}
-
-				// Check if the post is in a category
-				if (!empty($last_category)) {
-					echo $cat_display;
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
-					echo '</li>';
-
-					// Else if post is in a custom taxonomy
-				} else if (!empty($cat_id)) {
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--cat-' . $cat_id . ' ' . $breadcrumbs_class . '__item--cat-' . $cat_nicename . '">';
-					echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--cat-' . $cat_id . ' ' . $breadcrumbs_class . '__link--cat-' . $cat_nicename . '" href="' . $cat_link . '" title="' . $cat_name . '">' . $cat_name . '</a>';
-					echo '</li>';
-					echo '<li class="' . $breadcrumbs_class . '__separator"> ' . $separator . ' </li>';
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
-					echo '</li>';
-				} else {
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
-					echo '</li>';
-				}
-			} else if (is_category()) {
-				// Category page
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current">';
-				echo '<strong class="' . $breadcrumbs_class . '__current">' . single_cat_title('', false) . '</strong>';
-				echo '</li>';
-			} else if (is_page()) {
-				// Standard page
-				if ($post->post_parent) {
-					// If child page, get parents 
-					$anc = get_post_ancestors($post->ID);
-
-					// Get parents in the right order
-					$anc = array_reverse($anc);
-
-					// Parent page loop
-					if (!isset($parents)) $parents = null;
-					foreach ($anc as $ancestor) {
-						$parents .= '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--parent ' . $breadcrumbs_class . '__item--parent-' . $ancestor . '">';
-						$parents .= '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--parent ' . $breadcrumbs_class . '__link--parent-' . $ancestor . '" href="' . get_permalink($ancestor) . '" title="' . get_the_title($ancestor) . '">' . get_the_title($ancestor) . '</a>';
-						$parents .= '</li>';
-						$parents .= '<li class="' . $breadcrumbs_class . '__separator ' . $breadcrumbs_class . '__separator--' . $ancestor . '"> ' . $separator . ' </li>';
-					}
-
-					// Display parent pages
-					echo $parents;
-
-					// Current page
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</strong>';
-					echo '</li>';
-				} else {
-					// Just display current page if not parents
-					echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--' . $post->ID . '">';
-					echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $post->ID . '">' . get_the_title() . '</strong>';
-					echo '</li>';
-				}
-			} else if (is_tag()) {
-				// Tag page
-
-				// Get tag information
-				$term_id = get_query_var('tag_id');
-				$taxonomy = 'post_tag';
-				$args = 'include=' . $term_id;
-				$terms = get_terms($taxonomy, $args);
-				$get_term_id = $terms[0]->term_id;
-				$get_term_slug = $terms[0]->slug;
-				$get_term_name = $terms[0]->name;
-
-				// Display the tag name
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--tag-' . $get_term_id . ' ' . $breadcrumbs_class . '__item--tag-' . $get_term_slug . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--tag-' . $get_term_id . ' ' . $breadcrumbs_class . '__current--tag-' . $get_term_slug . '" title="Search results for: ' . $get_term_name . '">' . $get_term_name . '</strong>';
-				echo '</li>';
-			} elseif (is_day()) {
-				// Day archive
-
-				// Year link
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--year ' . $breadcrumbs_class . '__item--year-' . get_the_time('Y') . '">';
-				echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--year ' . $breadcrumbs_class . '__link--year-' . get_the_time('Y') . '" href="' . get_year_link(get_the_time('Y')) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</a>';
-				echo '</li>';
-				echo '<li class="' . $breadcrumbs_class . '__separator ' . $breadcrumbs_class . '__separator--' . get_the_time('Y') . '"> ' . $separator . ' </li>';
-
-				// Month link
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--month ' . $breadcrumbs_class . '__item--month-' . get_the_time('m') . '">';
-				echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--month ' . $breadcrumbs_class . '__link--month-' . get_the_time('m') . '" href="' . get_month_link(get_the_time('Y'), get_the_time('m')) . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</a>';
-				echo '</li>';
-				echo '<li class="' . $breadcrumbs_class . '__separator ' . $breadcrumbs_class . '__separator--' . get_the_time('m') . '"> ' . $separator . ' </li>';
-
-				// Day display
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--' . get_the_time('j') . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . get_the_time('j') . '"> ' . get_the_time('jS') . ' ' . get_the_time('M') . ' Archives</strong>';
-				echo '</li>';
-			} else if (is_month()) {
-				// Month Archive
-
-				// Year link
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--year ' . $breadcrumbs_class . '__item--year-' . get_the_time('Y') . '">';
-				echo '<a class="' . $breadcrumbs_class . '__link ' . $breadcrumbs_class . '__link--year ' . $breadcrumbs_class . '__link--year-' . get_the_time('Y') . '" href="' . get_year_link(get_the_time('Y')) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</a>';
-				echo '</li>';
-				echo '<li class="' . $breadcrumbs_class . '__separator ' . $breadcrumbs_class . '__separator--' . get_the_time('Y') . '"> ' . $separator . ' </li>';
-
-				// Month display
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--month ' . $breadcrumbs_class . '__item--month-' . get_the_time('m') . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--month-' . get_the_time('m') . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</strong>';
-				echo '</li>';
-			} else if (is_year()) {
-				// Display year archive
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--current-' . get_the_time('Y') . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . get_the_time('Y') . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</strong>';
-				echo '</li>';
-			} else if (is_author()) {
-				// Auhor archive
-
-				// Get the author information
-				global $author;
-				$userdata = get_userdata($author);
-
-				// Display author name
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--current-' . $userdata->user_nicename . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . $userdata->user_nicename . '" title="' . $userdata->display_name . '">' . 'Author: ' . $userdata->display_name . '</strong>';
-				echo '</li>';
-			} else if (get_query_var('paged')) {
-				// Paginated archives
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--current-' . get_query_var('paged') . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . get_query_var('paged') . '" title="Page ' . get_query_var('paged') . '">' . __('Page') . ' ' . get_query_var('paged') . '</strong>';
-				echo '</li>';
-			} else if (is_search()) {
-				// Search results page
-				echo '<li class="' . $breadcrumbs_class . '__item ' . $breadcrumbs_class . '__item--current ' . $breadcrumbs_class . '__item--current-' . get_search_query() . '">';
-				echo '<strong class="' . $breadcrumbs_class . '__current ' . $breadcrumbs_class . '__current--' . get_search_query() . '" title="Search results for: ' . get_search_query() . '">Search results for: ' . get_search_query() . '</strong>';
-				echo '</li>';
-			} elseif (is_404()) {
-				// 404 page
-				echo '<li>' . 'Error 404' . '</li>';
-			} elseif (is_home() && get_option('page_for_posts')) {
-				echo '<li>' . get_the_title(get_option('page_for_posts')) . '</li>';
 			}
 
-			echo '</ol>';
-			echo '</nav>';
+			// Fallback to categories if no custom taxonomies found
+			$categories = get_the_category($post_id);
+			if (!empty($categories)) {
+				$category = self::get_primary_term($categories, 'category');
+				$html .= self::get_taxonomy_hierarchy_breadcrumbs($category, false);
+				return $html;
+			}
 		}
+
+		return $html;
+	}
+
+	/**
+	 * Get the primary term from a list of terms (most deeply nested for hierarchical taxonomies)
+	 */
+	private static function get_primary_term($terms, $taxonomy)
+	{
+		if (empty($terms)) {
+			return null;
+		}
+
+		if (count($terms) === 1) {
+			return $terms[0];
+		}
+
+		if (!is_taxonomy_hierarchical($taxonomy)) {
+			return $terms[0];
+		}
+
+		// Find the most deeply nested term
+		$deepest_level = 0;
+		$primary_term = $terms[0];
+
+		foreach ($terms as $term) {
+			$level = count(get_ancestors($term->term_id, $taxonomy, 'taxonomy'));
+			if ($level > $deepest_level) {
+				$deepest_level = $level;
+				$primary_term = $term;
+			}
+		}
+
+		return $primary_term;
+	}
+
+	/**
+	 * Get hierarchical breadcrumbs for a taxonomy term
+	 */
+	private static function get_taxonomy_hierarchy_breadcrumbs($term, $include_current = true)
+	{
+		$html = '';
+
+		if (!$term || is_wp_error($term)) {
+			return $html;
+		}
+
+		// Get ancestors
+		if (is_taxonomy_hierarchical($term->taxonomy)) {
+			$ancestors = array_reverse(get_ancestors($term->term_id, $term->taxonomy, 'taxonomy'));
+
+			foreach ($ancestors as $ancestor_id) {
+				$ancestor = get_term($ancestor_id, $term->taxonomy);
+				if ($ancestor && !is_wp_error($ancestor)) {
+					$html .= self::breadcrumb_item(
+						$ancestor->name,
+						get_term_link($ancestor),
+						'tax-' . $ancestor->taxonomy,
+						false
+					);
+					$html .= self::separator();
+				}
+			}
+		}
+
+		// Add current term
+		if ($include_current) {
+			$html .= self::current_item($term->name);
+		} else {
+			$html .= self::breadcrumb_item(
+				$term->name,
+				get_term_link($term),
+				'tax-' . $term->taxonomy,
+				false
+			);
+			$html .= self::separator();
+		}
+
+		return $html;
+	}
+
+	/**
+	 * Get breadcrumb data as array for schema generation
+	 *
+	 * @return array Breadcrumb data
+	 */
+	public static function get_breadcrumb_data() {
+		$breadcrumbs = [];
+		
+		// Add home breadcrumb
+		$breadcrumbs[] = [
+			'text' => 'Home',
+			'url' => home_url('/')
+		];
+		
+		// Generate breadcrumbs based on current page type
+		if (is_single()) {
+			global $post;
+			
+			// Add post type archive
+			$post_type_obj = get_post_type_object($post->post_type);
+			if ($post_type_obj && $post_type_obj->has_archive) {
+				$breadcrumbs[] = [
+					'text' => $post_type_obj->labels->name,
+					'url' => get_post_type_archive_link($post->post_type)
+				];
+			}
+			
+			// Add current post
+			$breadcrumbs[] = [
+				'text' => get_the_title(),
+				'url' => get_permalink()
+			];
+			
+		} elseif (is_page()) {
+			global $post;
+			
+			// Add parent pages
+			if ($post->post_parent) {
+				$ancestors = array_reverse(get_post_ancestors($post->ID));
+				foreach ($ancestors as $ancestor_id) {
+					$breadcrumbs[] = [
+						'text' => get_the_title($ancestor_id),
+						'url' => get_permalink($ancestor_id)
+					];
+				}
+			}
+			
+			// Add current page
+			$breadcrumbs[] = [
+				'text' => get_the_title(),
+				'url' => get_permalink()
+			];
+			
+		} elseif (is_archive()) {
+			if (is_category()) {
+				$category = get_queried_object();
+				$breadcrumbs[] = [
+					'text' => 'Blog',
+					'url' => get_permalink(get_option('page_for_posts'))
+				];
+				$breadcrumbs[] = [
+					'text' => $category->name,
+					'url' => get_term_link($category)
+				];
+			} elseif (is_tag()) {
+				$tag = get_queried_object();
+				$breadcrumbs[] = [
+					'text' => 'Blog',
+					'url' => get_permalink(get_option('page_for_posts'))
+				];
+				$breadcrumbs[] = [
+					'text' => $tag->name,
+					'url' => get_term_link($tag)
+				];
+			} elseif (is_tax()) {
+				$term = get_queried_object();
+				$post_type_obj = get_post_type_object(get_post_type());
+				if ($post_type_obj && $post_type_obj->has_archive) {
+					$breadcrumbs[] = [
+						'text' => $post_type_obj->labels->name,
+						'url' => get_post_type_archive_link(get_post_type())
+					];
+				}
+				$breadcrumbs[] = [
+					'text' => $term->name,
+					'url' => get_term_link($term)
+				];
+			} elseif (is_date()) {
+				$breadcrumbs[] = [
+					'text' => 'Blog',
+					'url' => get_permalink(get_option('page_for_posts'))
+				];
+				$breadcrumbs[] = [
+					'text' => get_the_date(),
+					'url' => get_permalink()
+				];
+			} elseif (is_author()) {
+				$author = get_queried_object();
+				$breadcrumbs[] = [
+					'text' => 'Blog',
+					'url' => get_permalink(get_option('page_for_posts'))
+				];
+				$breadcrumbs[] = [
+					'text' => $author->display_name,
+					'url' => get_author_posts_url($author->ID)
+				];
+			} else {
+				$post_type_obj = get_post_type_object(get_post_type());
+				if ($post_type_obj) {
+					$breadcrumbs[] = [
+						'text' => $post_type_obj->labels->name,
+						'url' => get_post_type_archive_link(get_post_type())
+					];
+				}
+			}
+		} elseif (is_search()) {
+			$breadcrumbs[] = [
+				'text' => 'Search Results',
+				'url' => get_search_link()
+			];
+		} elseif (is_404()) {
+			$breadcrumbs[] = [
+				'text' => 'Page Not Found',
+				'url' => home_url('/404')
+			];
+		} elseif (is_home() && get_option('page_for_posts')) {
+			$breadcrumbs[] = [
+				'text' => 'Blog',
+				'url' => get_permalink(get_option('page_for_posts'))
+			];
+		}
+		
+		return $breadcrumbs;
+	}
+
+	/**
+	 * Generate a breadcrumb item
+	 */
+	private static function breadcrumb_item($text, $url = '', $additional_class = '', $is_current = false)
+	{
+		$class_suffix = $is_current ? '__item--current' : '';
+		$full_class = self::$class . '__item ' . self::$class . $class_suffix;
+
+		if ($additional_class) {
+			$full_class .= ' ' . self::$class . '__item--' . $additional_class;
+		}
+
+		$html = '<li class="' . $full_class . '">';
+
+		if ($is_current || empty($url)) {
+			$current_class = self::$class . '__current';
+			if ($additional_class) {
+				$current_class .= ' ' . self::$class . '__current--' . $additional_class;
+			}
+			$html .= '<strong class="' . $current_class . '" title="' . esc_attr($text) . '">' . $text . '</strong>';
+		} else {
+			$link_class = self::$class . '__link';
+			if ($additional_class) {
+				$link_class .= ' ' . self::$class . '__link--' . $additional_class;
+			}
+			$html .= '<a class="' . $link_class . '" href="' . esc_url($url) . '" title="' . esc_attr($text) . '">' . $text . '</a>';
+		}
+
+		$html .= '</li>';
+
+		return $html;
+	}
+
+	/**
+	 * Generate a current/active breadcrumb item
+	 */
+	private static function current_item($text, $additional_class = '')
+	{
+		return self::breadcrumb_item($text, '', $additional_class, true);
+	}
+
+	/**
+	 * Generate breadcrumb separator
+	 */
+	private static function separator()
+	{
+		return '<li class="' . self::$class . '__separator"> ' . self::$separator . ' </li>';
 	}
 }

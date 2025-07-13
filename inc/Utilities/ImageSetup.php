@@ -12,7 +12,7 @@
  * 
  **/
 
-namespace BuiltNorth\Utility\Utilities;
+namespace BuiltNorth\WPUtility\Utilities;
 
 
 /**
