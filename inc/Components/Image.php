@@ -11,7 +11,7 @@
  * @since BuiltNorth/Utility 1.0.0
  **/
 
-namespace BuiltNorth\Utility\Components;
+namespace BuiltNorth\WPUtility\Components;
 
 class Image
 {

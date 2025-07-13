@@ -1,8 +1,8 @@
 <?php
 
-namespace BuiltNorth\Utility\Components;
+namespace BuiltNorth\WPUtility\Components;
 
-use BuiltNorth\Utility\Component;
+use BuiltNorth\WPUtility\Component;
 use WP_Query;
 
 class PostFeed

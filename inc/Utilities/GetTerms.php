@@ -11,7 +11,7 @@
  * @since 1.0.0
  */
 
-namespace BuiltNorth\Utility\Utilities;
+namespace BuiltNorth\WPUtility\Utilities;
 
 class GetTerms
 {

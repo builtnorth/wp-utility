@@ -12,7 +12,7 @@
  * 
  **/
 
-namespace BuiltNorth\Utility;
+namespace BuiltNorth\WPUtility;
 
 
 /**
@@ -60,18 +60,17 @@ class Init
 
 	/**
 	 * Private constructor to prevent direct instantiation.
-	 * Triggers the init method.
 	 */
 	private function __construct()
 	{
-		$this->init();
+		// Constructor now does nothing - initialization moved to boot()
 	}
 
 	/**
-	 * Initialize the Init.
-	 * This method is called automatically when the class is instantiated.
+	 * Boot the utility package.
+	 * This method should be called after getting the instance.
 	 */
-	private function init()
+	public function boot()
 	{
 		$this->load_classes();
 	}

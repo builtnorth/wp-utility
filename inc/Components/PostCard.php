@@ -1,6 +1,6 @@
 <?php
 
-namespace BuiltNorth\Utility\Components;
+namespace BuiltNorth\WPUtility\Components;
 
 /**
  * PostCard Component

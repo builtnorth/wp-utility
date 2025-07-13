@@ -2,6 +2,7 @@
     "name": "builtnorth/wp-utility",
     "description": "Utility functions and helpers for WordPress development",
     "type": "library",
+    "version": "1.0.0",
     "license": "GPL-2.0-or-later",
     "authors": [
         {
@@ -14,12 +15,12 @@
     },
     "autoload": {
         "psr-4": {
-            "BuiltNorth\\Utility\\": "inc/"
+            "BuiltNorth\\WPUtility\\": "inc/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "BuiltNorth\\Utility\\Tests\\": "tests/"
+            "BuiltNorth\\WPUtility\\Tests\\": "tests/"
         }
     },
     "require-dev": {

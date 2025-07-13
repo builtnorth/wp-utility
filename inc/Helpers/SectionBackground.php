@@ -1,8 +1,8 @@
 <?php
 
-namespace BuiltNorth\Utility\Helpers;
+namespace BuiltNorth\WPUtility\Helpers;
 
-use BuiltNorth\Utility\Component;
+use BuiltNorth\WPUtility\Component;
 
 class SectionBackground
 {

@@ -11,7 +11,7 @@
  * @since 2.0.0
  */
 
-namespace BuiltNorth\Utility;
+namespace BuiltNorth\WPUtility;
 
 /**
  * Don't load directly.
