@@ -25,6 +25,7 @@ if (!defined('WPINC')) {
 /**
  * Class Init
  */
+
 class Init
 {
 	/**
@@ -99,3 +100,4 @@ class Init
 		}
 	}
 }
+
