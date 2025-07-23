@@ -17,7 +17,7 @@ class PostCard
 	 * @param string $template_part_slug Optional custom template part slug
 	 * @return string Rendered post card HTML
 	 */
-	public static function render($post_type = 'post', $display_type = 'grid', $template_part_slug = '')
+	public static function render($post_type = 'post', $display_type = 'grid', $template_part_slug = 'post-card')
 	{
 		self::render_template_part($post_type, $template_part_slug);
 	}
