@@ -61,9 +61,20 @@ class Image
 		// Image attributes
 		$attributes = wp_get_attachment_image_src($id, $size);
 
-		// Set width & height
-		$width = $attributes[1] ?? '';
-		$height = $attributes[2] ?? '';
+		// Set width & height - handle SVG files which may not have dimensions
+		$width = isset($attributes[1]) ? $attributes[1] : '';
+		$height = isset($attributes[2]) ? $attributes[2] : '';
+		
+		// For SVG files, check if we can get dimensions from the file itself
+		if (empty($width) || empty($height)) {
+			$mime_type = get_post_mime_type($id);
+			if ($mime_type === 'image/svg+xml') {
+				// SVGs don't have inherent dimensions in WordPress metadata
+				// Set reasonable defaults or leave empty for responsive SVGs
+				$width = '';
+				$height = '';
+			}
+		}
 
 		// Set alt text
 		$alt = $custom_alt ?: $image_alt;
