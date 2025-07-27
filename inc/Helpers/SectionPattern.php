@@ -25,21 +25,21 @@ class SectionPattern
 			$container = \Polaris\Base\Container::get_instance();
 			if ($container->has('feature_manager')) {
 				$feature_manager = $container->get('feature_manager');
-				$pattern_config = $feature_manager->get_feature(['blocks', 'editor_experience', 'patterns'], []);
+				$pattern_config = $feature_manager->get_feature(['editor_experience', 'patterns'], []);
 				
 				// Check if patterns are enabled and this pattern is available
 				if (empty($pattern_config['enabled']) || empty($pattern_config['available_patterns'][$pattern])) {
 					return '';
 				}
 				
-				$pattern_dir = isset($pattern_config['pattern_directory']) ? '/' . trim($pattern_config['pattern_directory'], '/') . '/' : '/src/assets/background-patterns/';
+				$pattern_dir = isset($pattern_config['pattern_directory']) ? '/' . trim($pattern_config['pattern_directory'], '/') . '/' : '/build/assets/background-patterns/';
 			} else {
 				// Fallback if FeatureManager not available
-				$pattern_dir = '/src/assets/background-patterns/';
+				$pattern_dir = '/build/assets/background-patterns/';
 			}
 		} else {
 			// Fallback if Polaris not available
-			$pattern_dir = '/src/assets/background-patterns/';
+			$pattern_dir = '/build/assets/background-patterns/';
 		}
 
 		// Build SVG path
