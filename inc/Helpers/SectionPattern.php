@@ -15,6 +15,7 @@ class SectionPattern
 	public static function render($attributes)
 	{
 		$pattern = !empty($attributes['pattern']) ? $attributes['pattern'] : '';
+		$pattern_align = !empty($attributes['patternAlign']) ? $attributes['patternAlign'] : 'center center';
 		
 		if (empty($pattern)) {
 			return '';
@@ -56,10 +57,25 @@ class SectionPattern
 			return '';
 		}
 
+		// Convert alignment value to class name
+		$alignment_map = [
+			'top left' => 'top-left',
+			'top center' => 'top-center',
+			'top right' => 'top-right',
+			'center left' => 'center-left',
+			'center center' => 'center-center',
+			'center' => 'center-center',
+			'center right' => 'center-right',
+			'bottom left' => 'bottom-left',
+			'bottom center' => 'bottom-center',
+			'bottom right' => 'bottom-right',
+		];
+		$align_class = isset($alignment_map[$pattern_align]) ? $alignment_map[$pattern_align] : 'center-center';
+
 		// Build output
 		ob_start();
 		?>
-		<div class="section-pattern has-pattern-<?php echo esc_attr($pattern); ?>" aria-hidden="true">
+		<div class="section-pattern has-pattern-<?php echo esc_attr($pattern); ?> pattern-align--<?php echo esc_attr($align_class); ?>" aria-hidden="true">
 			<?php echo Helper::EscapeSVG($svg_content); ?>
 		</div>
 		<?php
