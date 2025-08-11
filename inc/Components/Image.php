@@ -42,8 +42,8 @@ class Image
 		$size = 'full',
 		$max_width = '1200px',
 		$style = null,
-		$caption = null,
-		$alt = null,
+		$caption = '',
+		$alt = '',
 	) {
 		// Check the image ID is not empty
 		if (empty($id)) {
@@ -51,19 +51,19 @@ class Image
 		}
 
 		// Image src and srcset
-		$src = wp_get_attachment_image_url($id, $size);
-		$srcset = wp_get_attachment_image_srcset($id, $size);
+		$src = wp_get_attachment_image_url($id, $size) ?: '';
+		$srcset = wp_get_attachment_image_srcset($id, $size) ?: '';
 
 		// Image alt and caption
-		$image_alt = get_post_meta($id, '_wp_attachment_image_alt', true);
-		$image_caption = wp_get_attachment_caption($id);
+		$image_alt = get_post_meta($id, '_wp_attachment_image_alt', true) ?: '';
+		$image_caption = wp_get_attachment_caption($id) ?: '';
 
 		// Image attributes
 		$attributes = wp_get_attachment_image_src($id, $size);
 
 		// Set width & height - handle SVG files which may not have dimensions
-		$width = isset($attributes[1]) ? $attributes[1] : '';
-		$height = isset($attributes[2]) ? $attributes[2] : '';
+		$width = (isset($attributes[1]) && $attributes[1]) ? (string) $attributes[1] : '';
+		$height = (isset($attributes[2]) && $attributes[2]) ? (string) $attributes[2] : '';
 		
 		// For SVG files, check if we can get dimensions from the file itself
 		if (empty($width) || empty($height)) {
@@ -76,16 +76,25 @@ class Image
 			}
 		}
 
-		// Set alt text
-		$alt = $custom_alt ?: $image_alt;
+		// Set alt text - use parameter alt if provided, otherwise custom_alt, otherwise image_alt
+		$final_alt = '';
+		if (!empty($alt)) {
+			$final_alt = (string) $alt;
+		} elseif (!empty($custom_alt)) {
+			$final_alt = (string) $custom_alt;
+		} elseif (!empty($image_alt)) {
+			$final_alt = (string) $image_alt;
+		}
+		
 		// add class
-		$class = $class ? esc_attr($class) : 'image';
+		$class = $class ? esc_attr((string) $class) : 'image';
 
 		// add additional classes
-		$additional_classes = $additional_classes ? $additional_classes : '';
+		$additional_classes = $additional_classes ? (string) $additional_classes : '';
 
 		// Add caption
-		$caption = ($show_caption === true && !empty($caption)) ? '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($caption) . '</figcaption>' : '';
+		$caption_str = (string) $caption;
+		$caption_html = ($show_caption === true && !empty($caption_str)) ? '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($caption_str) . '</figcaption>' : '';
 
 		// Set lazy loading
 		$lazy = $lazy ? 'loading=lazy decoding=async' : 'loading=eager decoding=sync fetchpriority="high"';
@@ -103,16 +112,16 @@ class Image
 			$style_attr = '';
 		}
 
-		// Build the img tag	
+		// Build the img tag - ensure all values are strings for escaping functions
 		$img_tag = "<img
 			$lazy 
-			class='" . esc_attr($class) . "__img " . esc_attr($additional_classes) . "'
-			alt='" . esc_attr($alt) . "'
-			src='" . esc_url($src) . "'
-			srcset='" . esc_attr($srcset) . "'
-			sizes='(max-width: " . esc_attr($max_width) . ") 100vw, " . esc_attr($max_width) . "'
-			width='" . esc_attr($width) . "'
-			height='" . esc_attr($height) . "'
+			class='" . esc_attr($class . "__img " . $additional_classes) . "'
+			alt='" . esc_attr((string) $final_alt) . "'
+			src='" . esc_url((string) $src) . "'
+			srcset='" . esc_attr((string) $srcset) . "'
+			sizes='(max-width: " . esc_attr((string) $max_width) . ") 100vw, " . esc_attr((string) $max_width) . "'
+			width='" . esc_attr((string) $width) . "'
+			height='" . esc_attr((string) $height) . "'
 			$style_attr
 		/>";
 
@@ -120,7 +129,7 @@ class Image
 		if ($include_figure) {
 			echo "<figure class='" . esc_attr($class) . "__figure'>
 				$img_tag
-				$caption 
+				$caption_html 
 			</figure>";
 		} else {
 			echo $img_tag;
