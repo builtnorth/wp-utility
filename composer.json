@@ -33,6 +33,8 @@
         "test": "phpunit",
         "test:unit": "phpunit --testsuite Unit",
         "test:coverage": "phpunit --coverage-html coverage",
+        "lint": "phpcs",
+        "lint:fix": "phpcbf",
         "phpcs": "phpcs",
         "phpcs:summary": "phpcs --report=summary",
         "phpcbf": "phpcbf",
