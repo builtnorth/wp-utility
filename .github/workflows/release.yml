@@ -56,13 +56,8 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
 
-      - name: Update composer.json version
-        if: contains(fromJSON('["composer.json", "package.json"]'), 'composer.json')
-        run: |
-          if [ -f composer.json ]; then
-            jq '.version = "${{ steps.version.outputs.version_number }}"' composer.json > composer.tmp.json
-            mv composer.tmp.json composer.json
-          fi
+      # Skip composer.json version update - version tracked via git tags only
+      # This prevents merge conflicts between branches
 
       - name: Update package.json version
         if: contains(fromJSON('["package.json"]'), 'package.json')
@@ -77,16 +72,13 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          if [ -f composer.json ]; then
-            git add composer.json
-          fi
+          # Only commit package.json updates if it exists
           if [ -f package.json ]; then
             git add package.json package-lock.json
-          fi
-          
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: bump version to ${{ steps.version.outputs.version_number }}"
-            git push origin HEAD:${{ github.ref_name }}
+            if ! git diff --cached --quiet; then
+              git commit -m "chore: bump version to ${{ steps.version.outputs.version_number }}"
+              git push origin HEAD:${{ github.ref_name }}
+            fi
           fi
 
       - name: Create and push tag
