@@ -10,6 +10,7 @@ class Button
 		$extra_class = null,
 		$style = 'default',
 		$size = 'default',
+		$appearance = 'fill',
 		$text = 'Button Text',
 		$link = null,
 		$target = null,
@@ -69,13 +70,13 @@ class Button
 
 		// For button elements, don't wrap text in span to avoid click event issues
 		if ($button_type === 'button') {
-			$button = '<' . $button_type . ' class="' . $wrapper_class . 'wp-block-polaris-button is-style-' . $style . ' is-size-' . $size . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
+			$button = '<' . $button_type . ' class="' . $wrapper_class . 'wp-block-polaris-button is-style-' . $style . ' is-size-' . $size . ' is-appearance-' . $appearance . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
 				$icon_left_html .
 				$text . $screen_reader .
 				$icon_right_html .
 				'</' . $button_type . '>';
 		} else {
-			$button = '<' . $button_type . ' class="' . $wrapper_class . 'wp-block-polaris-button is-style-' . $style . ' is-size-' . $size . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
+			$button = '<' . $button_type . ' class="' . $wrapper_class . 'wp-block-polaris-button is-style-' . $style . ' is-size-' . $size . ' is-appearance-' . $appearance . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
 				$icon_left_html .
 				'<span class="' . $link_class . 'wp-block-polaris-button__text">' . $text . '</span>' .
 				$screen_reader .
