@@ -17,36 +17,23 @@ use WP_Mock;
 class ComponentTest extends WPMockTestCase {
 
 	/**
-	 * Test that Component is a singleton
+	 * Test that Component uses static methods
 	 */
-	public function test_component_is_singleton() {
-		$instance1 = Component::instance();
-		$instance2 = Component::instance();
+	public function test_component_uses_static_methods() {
+		$this->assertTrue( class_exists( Component::class ) );
 		
-		$this->assertSame( $instance1, $instance2 );
-		$this->assertInstanceOf( Component::class, $instance1 );
+		// Component uses __callStatic for rendering
+		$this->assertTrue( method_exists( Component::class, '__callStatic' ) );
 	}
 
 	/**
-	 * Test init method registers components
+	 * Test that Component throws exception for non-existent component
 	 */
-	public function test_init_registers_components() {
-		$component = Component::instance();
-		$component->init();
+	public function test_component_throws_exception_for_nonexistent() {
+		$this->expectException( \BadMethodCallException::class );
+		$this->expectExceptionMessage( 'Component nonexistent does not exist.' );
 		
-		// Verify component was initialized
-		$this->assertInstanceOf( Component::class, $component );
-	}
-
-	/**
-	 * Test that component classes are registered
-	 */
-	public function test_component_classes_registered() {
-		$component = Component::instance();
-		
-		// Check that component has expected properties/methods
-		$this->assertTrue( method_exists( $component, 'init' ) );
-		$this->assertTrue( method_exists( $component, 'instance' ) );
+		Component::nonexistent();
 	}
 
 	/**

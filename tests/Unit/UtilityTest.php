@@ -17,36 +17,23 @@ use WP_Mock;
 class UtilityTest extends WPMockTestCase {
 
 	/**
-	 * Test that Utility is a singleton
+	 * Test that Utility uses static methods
 	 */
-	public function test_utility_is_singleton() {
-		$instance1 = Utility::instance();
-		$instance2 = Utility::instance();
+	public function test_utility_uses_static_methods() {
+		$this->assertTrue( class_exists( Utility::class ) );
 		
-		$this->assertSame( $instance1, $instance2 );
-		$this->assertInstanceOf( Utility::class, $instance1 );
+		// Utility uses __callStatic for calling utilities
+		$this->assertTrue( method_exists( Utility::class, '__callStatic' ) );
 	}
 
 	/**
-	 * Test init method registers utilities
+	 * Test that Utility throws exception for non-existent utility
 	 */
-	public function test_init_registers_utilities() {
-		$utility = Utility::instance();
-		$utility->init();
+	public function test_utility_throws_exception_for_nonexistent() {
+		$this->expectException( \BadMethodCallException::class );
+		$this->expectExceptionMessage( 'Utility nonexistent does not exist.' );
 		
-		// Verify utility was initialized
-		$this->assertInstanceOf( Utility::class, $utility );
-	}
-
-	/**
-	 * Test that utility classes are registered
-	 */
-	public function test_utility_classes_registered() {
-		$utility = Utility::instance();
-		
-		// Check that utility has expected properties/methods
-		$this->assertTrue( method_exists( $utility, 'init' ) );
-		$this->assertTrue( method_exists( $utility, 'instance' ) );
+		Utility::nonexistent();
 	}
 
 	/**

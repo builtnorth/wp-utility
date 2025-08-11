@@ -17,36 +17,23 @@ use WP_Mock;
 class HelperTest extends WPMockTestCase {
 
 	/**
-	 * Test that Helper is a singleton
+	 * Test that Helper uses static methods
 	 */
-	public function test_helper_is_singleton() {
-		$instance1 = Helper::instance();
-		$instance2 = Helper::instance();
+	public function test_helper_uses_static_methods() {
+		$this->assertTrue( class_exists( Helper::class ) );
 		
-		$this->assertSame( $instance1, $instance2 );
-		$this->assertInstanceOf( Helper::class, $instance1 );
+		// Helper uses __callStatic for calling helpers
+		$this->assertTrue( method_exists( Helper::class, '__callStatic' ) );
 	}
 
 	/**
-	 * Test init method registers helpers
+	 * Test that Helper throws exception for non-existent helper
 	 */
-	public function test_init_registers_helpers() {
-		$helper = Helper::instance();
-		$helper->init();
+	public function test_helper_throws_exception_for_nonexistent() {
+		$this->expectException( \BadMethodCallException::class );
+		$this->expectExceptionMessage( 'Helper nonexistent does not exist.' );
 		
-		// Verify helper was initialized
-		$this->assertInstanceOf( Helper::class, $helper );
-	}
-
-	/**
-	 * Test that helper classes are registered
-	 */
-	public function test_helper_classes_registered() {
-		$helper = Helper::instance();
-		
-		// Check that helper has expected properties/methods
-		$this->assertTrue( method_exists( $helper, 'init' ) );
-		$this->assertTrue( method_exists( $helper, 'instance' ) );
+		Helper::nonexistent();
 	}
 
 	/**
