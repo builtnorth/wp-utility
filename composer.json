@@ -37,7 +37,7 @@
         "phpcs": "phpcs",
         "phpcs:summary": "phpcs --report=summary",
         "phpcbf": "phpcbf",
-        "phpcompat": "phpcs -p . --standard=PHPCompatibility --runtime-set testVersion 8.1-"
+        "phpcompat": "phpcs -p inc --standard=PHPCompatibility --runtime-set testVersion 8.1- --exclude=*/vendor/*,*/tests/*"
     },
     "config": {
         "optimize-autoloader": true,
