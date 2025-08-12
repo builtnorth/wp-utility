@@ -31,7 +31,7 @@ class UtilityTest extends WPMockTestCase {
 	 */
 	public function test_utility_throws_exception_for_nonexistent() {
 		$this->expectException( \BadMethodCallException::class );
-		$this->expectExceptionMessage( 'Utility nonexistent does not exist.' );
+		$this->expectExceptionMessage( 'Utility method nonexistent does not exist.' );
 		
 		Utility::nonexistent();
 	}

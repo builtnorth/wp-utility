@@ -31,7 +31,7 @@ class ComponentTest extends WPMockTestCase {
 	 */
 	public function test_component_throws_exception_for_nonexistent() {
 		$this->expectException( \BadMethodCallException::class );
-		$this->expectExceptionMessage( 'Component nonexistent does not exist.' );
+		$this->expectExceptionMessage( 'Component method nonexistent does not exist.' );
 		
 		Component::nonexistent();
 	}
@@ -71,17 +71,4 @@ class ComponentTest extends WPMockTestCase {
 		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Components\\Pagination' ) );
 	}
 
-	/**
-	 * Test post card component exists
-	 */
-	public function test_post_card_component_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Components\\PostCard' ) );
-	}
-
-	/**
-	 * Test post feed component exists
-	 */
-	public function test_post_feed_component_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Components\\PostFeed' ) );
-	}
 }

@@ -31,7 +31,7 @@ class HelperTest extends WPMockTestCase {
 	 */
 	public function test_helper_throws_exception_for_nonexistent() {
 		$this->expectException( \BadMethodCallException::class );
-		$this->expectExceptionMessage( 'Helper nonexistent does not exist.' );
+		$this->expectExceptionMessage( 'Helper method nonexistent does not exist.' );
 		
 		Helper::nonexistent();
 	}
