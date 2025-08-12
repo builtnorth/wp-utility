@@ -75,27 +75,6 @@ class Component
 		return Pagination::render(...$args);
 	}
 
-	/**
-	 * Render a post card component.
-	 *
-	 * @param mixed ...$args Arguments to pass to the component.
-	 * @return string The rendered component.
-	 */
-	public static function postCard(...$args)
-	{
-		return PostCard::render(...$args);
-	}
-
-	/**
-	 * Render a post feed component.
-	 *
-	 * @param mixed ...$args Arguments to pass to the component.
-	 * @return string The rendered component.
-	 */
-	public static function postFeed(...$args)
-	{
-		return PostFeed::render(...$args);
-	}
 
 	// Legacy support for PascalCase methods (PHP method names are case-insensitive)
 	// So Component::Image() will work the same as Component::image()
