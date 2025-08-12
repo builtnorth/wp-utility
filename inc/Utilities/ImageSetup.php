@@ -76,7 +76,15 @@ class ImageSetup
 	 */
 	public function remove_default_image_sizes($sizes)
 	{
-		$targets = ['thumbnail', 'medium', 'medium_large', 'large', '1536x1536', '2048x2048'];
+		$default_targets = ['thumbnail', 'medium', 'medium_large', 'large', '1536x1536', '2048x2048'];
+		
+		/**
+		 * Filter the default image sizes to remove.
+		 * 
+		 * @param array $targets Array of default image size names to remove.
+		 */
+		$targets = apply_filters('wp_utility_remove_default_sizes', $default_targets);
+		
 		return array_diff($sizes, $targets);
 	}
 
@@ -87,7 +95,12 @@ class ImageSetup
 	 */
 	public function update_max_srcset_image_width()
 	{
-		return 1600;
+		/**
+		 * Filter the maximum srcset image width.
+		 * 
+		 * @param int $max_width Maximum width in pixels. Default 1600.
+		 */
+		return apply_filters('wp_utility_max_srcset_width', 1600);
 	}
 
 	/**
@@ -99,8 +112,10 @@ class ImageSetup
 	public function add_image_sizes()
 	{
 
-		// Add support for custom images
-		add_theme_support('post-thumbnails');
+		// Add support for custom images if not already defined
+		if (!current_theme_supports('post-thumbnails')) {
+			add_theme_support('post-thumbnails');
+		}
 
 		// Default image sizes
 		$default_sizes = [
@@ -144,14 +159,22 @@ class ImageSetup
 	 */
 	public function image_size_names($sizes)
 	{
-
-		return array_merge($sizes, array(
+		$default_names = [
 			'wide_xlarge' => __('Extra Large'),
 			'wide_large' => __('Large'),
 			'wide_medium' => __('Medium'),
 			'wide_small' => __('Small'),
 			'wide_xsmall' => __('Extra Small'),
-		));
+		];
+
+		/**
+		 * Filter the image size display names.
+		 * 
+		 * @param array $names Array of image size names to add to the block editor.
+		 */
+		$custom_names = apply_filters('wp_utility_image_size_names', $default_names);
+
+		return array_merge($sizes, $custom_names);
 	}
 
 	public static function render()
