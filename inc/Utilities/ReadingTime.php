@@ -10,9 +10,16 @@ class ReadingTime
 	 */
 	public static function render()
 	{
-
 		$word_count = str_word_count(strip_tags(get_the_content()));
-		$readingtime = ceil($word_count / 200);
+		
+		/**
+		 * Filter the words per minute for reading time calculation.
+		 * 
+		 * @param int $words_per_minute Words per minute. Default 200.
+		 */
+		$words_per_minute = apply_filters('wp_utility_reading_time_wpm', 200);
+		
+		$readingtime = ceil($word_count / $words_per_minute);
 		return $readingtime;
 	}
 }

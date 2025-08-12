@@ -16,6 +16,14 @@ class LazyLoadFirstBlock
 	{
 		$lazy = $default_lazy;
 
+		/**
+		 * Filter the list of parent blocks that should disable lazy loading.
+		 * 
+		 * @param array $non_lazy_parents Array of parent block names.
+		 * @param object $block The current block object.
+		 */
+		$non_lazy_parents = apply_filters('wp_utility_lazy_load_non_lazy_parents', $non_lazy_parents, $block);
+
 		if (
 			isset($block->block_type->parent) &&
 			is_array($block->block_type->parent) &&
