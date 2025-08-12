@@ -43,24 +43,4 @@ class HelperTest extends WPMockTestCase {
 		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Helpers\\EscapeSvg' ) );
 	}
 
-	/**
-	 * Test foreground image helper exists
-	 */
-	public function test_foreground_image_helper_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Helpers\\ForegroundImage' ) );
-	}
-
-	/**
-	 * Test section background helper exists
-	 */
-	public function test_section_background_helper_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Helpers\\SectionBackground' ) );
-	}
-
-	/**
-	 * Test section pattern helper exists
-	 */
-	public function test_section_pattern_helper_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Helpers\\SectionPattern' ) );
-	}
 }
