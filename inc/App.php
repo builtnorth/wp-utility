@@ -2,7 +2,7 @@
 
 /**
  * ------------------------------------------------------------------
- * Class: Init
+ * Class: App
  * ------------------------------------------------------------------
  *
  * This class is responsible for loading and initializing classes.
@@ -23,15 +23,15 @@ if (!defined('WPINC')) {
 }
 
 /**
- * Class Init
+ * Class App
  */
 
-class Init
+class App
 {
 	/**
 	 * Holds the single instance of this class.
 	 *
-	 * @var Init|null
+	 * @var App|null
 	 */
 	protected static $instance = null;
 
@@ -49,7 +49,7 @@ class Init
 	/**
 	 * Get the single instance of this class.
 	 *
-	 * @return Init
+	 * @return App
 	 */
 	public static function instance()
 	{
@@ -100,4 +100,3 @@ class Init
 		}
 	}
 }
-
