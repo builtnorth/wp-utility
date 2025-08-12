@@ -1,4 +1,14 @@
 <?php
+/**
+ * Pagination Component
+ *
+ * Generates accessible pagination for WordPress queries with support
+ * for custom post types and archives.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Components
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Components;
 
@@ -28,7 +38,7 @@ class Pagination
 			$base = get_pagenum_link(1);
 		}
 
-		$paginate_links = paginate_links(array(
+		$args = array(
 			'base' => $base . '%_%',
 			'format' => (strpos($base, '?') !== false ? '&' : '?') . 'paged=%#%',
 			'current' => max(1, $paged),
@@ -36,11 +46,40 @@ class Pagination
 			'mid_size' => 3,
 			'type' => 'list',
 			'before_page_number' => '<span class="sr-only">' . $translated . ' </span>',
-		));
+		);
+
+		/**
+		 * Filter the pagination arguments.
+		 * 
+		 * @param array $args Pagination arguments for paginate_links().
+		 * @param WP_Query $query The query object.
+		 */
+		$args = apply_filters('wp_utility_pagination_args', $args, $query);
+
+		$paginate_links = paginate_links($args);
 
 		// Display the pagination if more than one page is found
 		if ($paginate_links) {
-			return '<div class="pagination" aria-label="Navigate Between Archive Pages">' . $paginate_links . '</div>';
+			$wrapper_class = 'pagination';
+			$wrapper_label = 'Navigate Between Archive Pages';
+			
+			/**
+			 * Filter the pagination wrapper attributes.
+			 * 
+			 * @param array $wrapper Array with 'class' and 'label' keys.
+			 * @param WP_Query $query The query object.
+			 */
+			$wrapper = apply_filters('wp_utility_pagination_wrapper', [
+				'class' => $wrapper_class,
+				'label' => $wrapper_label,
+			], $query);
+			
+			return sprintf(
+				'<div class="%s" aria-label="%s">%s</div>',
+				esc_attr($wrapper['class']),
+				esc_attr($wrapper['label']),
+				$paginate_links
+			);
 		}
 
 		return '';

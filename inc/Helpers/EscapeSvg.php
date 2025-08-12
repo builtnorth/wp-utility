@@ -1,4 +1,14 @@
 <?php
+/**
+ * Escape SVG Helper
+ *
+ * Provides secure SVG content sanitization to prevent XSS attacks
+ * while preserving valid SVG markup.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Helpers
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Helpers;
 

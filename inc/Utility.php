@@ -1,41 +1,15 @@
 <?php
-
 /**
- * ------------------------------------------------------------------
- * Component Class
- * ------------------------------------------------------------------
+ * Utility Alias
  *
- * This class is used to render components.
- *
- * @package BuiltNorth\Utility
- * @since 2.0.0
+ * Backward compatibility alias for Utility class to maintain
+ * existing implementations after namespace reorganization.
+ * 
+ * @package BuiltNorth\WPUtility
+ * @since 1.0.0
+ * @deprecated Use BuiltNorth\WPUtility\Utilities\Utility instead
  */
 
 namespace BuiltNorth\WPUtility;
 
-/**
- * Don't load directly.
- */
-defined('ABSPATH') || defined('WP_CLI') || exit;
-
-class Utility
-{
-	/**
-	 * Render a component.
-	 *
-	 * @param string $name The name of the component.
-	 * @param array $arguments The arguments to pass to the component.
-	 * @return string The rendered component.
-	 */
-	public static function __callStatic($name, $arguments)
-	{
-		// Convert get_title to GetTitle
-		$className = str_replace('_', '', ucwords($name, '_'));
-		$utilityClass = __NAMESPACE__ . '\\Utilities\\' . $className;
-
-		if (class_exists($utilityClass)) {
-			return call_user_func_array([$utilityClass, 'render'], $arguments);
-		}
-		throw new \BadMethodCallException("Utility $name does not exist.");
-	}
-}
+class_alias('BuiltNorth\WPUtility\Utilities\Utility', 'BuiltNorth\WPUtility\Utility');

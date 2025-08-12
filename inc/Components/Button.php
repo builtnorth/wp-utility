@@ -1,4 +1,14 @@
 <?php
+/**
+ * Button Component
+ *
+ * Renders flexible button or link elements with support for icons,
+ * styles, sizes, and screen reader text.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Components
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Components;
 
@@ -54,11 +64,18 @@ class Button
 		$target = $target ? ' ' . $target : '';
 		$attributes = $attributes ? ' ' . $attributes : '';
 
+		/**
+		 * Filter the button block class prefix.
+		 * 
+		 * @param string $prefix The button class prefix. Default 'wp-block-polaris-button'.
+		 */
+		$block_prefix = apply_filters('wp_utility_button_block_prefix', 'wp-block-polaris-button');
+
 		// Prepare icon HTML
 		$icon_left_html = '';
 		$icon_right_html = '';
 		if ($icon) {
-			$icon_class = 'wp-block-polaris-button__icon wp-block-polaris-button__icon--' . esc_attr($icon_position);
+			$icon_class = $block_prefix . '__icon ' . $block_prefix . '__icon--' . esc_attr($icon_position);
 			$icon_html = '<span class="' . $icon_class . '">' . $icon . '</span>';
 			
 			if ($icon_position === 'right') {
@@ -70,15 +87,15 @@ class Button
 
 		// For button elements, don't wrap text in span to avoid click event issues
 		if ($button_type === 'button') {
-			$button = '<' . $button_type . ' class="' . $wrapper_class . 'wp-block-polaris-button is-style-' . $style . ' is-size-' . $size . ' is-appearance-' . $appearance . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
+			$button = '<' . $button_type . ' class="' . $wrapper_class . $block_prefix . ' is-style-' . $style . ' is-size-' . $size . ' is-appearance-' . $appearance . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
 				$icon_left_html .
 				$text . $screen_reader .
 				$icon_right_html .
 				'</' . $button_type . '>';
 		} else {
-			$button = '<' . $button_type . ' class="' . $wrapper_class . 'wp-block-polaris-button is-style-' . $style . ' is-size-' . $size . ' is-appearance-' . $appearance . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
+			$button = '<' . $button_type . ' class="' . $wrapper_class . $block_prefix . ' is-style-' . $style . ' is-size-' . $size . ' is-appearance-' . $appearance . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
 				$icon_left_html .
-				'<span class="' . $link_class . 'wp-block-polaris-button__text">' . $text . '</span>' .
+				'<span class="' . $link_class . $block_prefix . '__text">' . $text . '</span>' .
 				$screen_reader .
 				$icon_right_html .
 				'</' . $button_type . '>';

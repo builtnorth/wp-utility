@@ -1,4 +1,14 @@
 <?php
+/**
+ * Breadcrumbs Component
+ *
+ * Generates semantic breadcrumb navigation with support for various
+ * WordPress content types including posts, pages, archives, and taxonomies.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Components
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Components;
 
@@ -52,7 +62,15 @@ class Breadcrumbs
 	 */
 	private static function open_nav()
 	{
-		return '<nav class="' . self::$class . '"><ol class="' . self::$class . '__list">';
+		$html = '<nav class="' . self::$class . '"><ol class="' . self::$class . '__list">';
+		
+		/**
+		 * Filter the breadcrumb navigation opening HTML.
+		 * 
+		 * @param string $html Opening HTML.
+		 * @param string $class The breadcrumb class.
+		 */
+		return apply_filters('wp_utility_breadcrumb_open_nav', $html, self::$class);
 	}
 
 	/**
@@ -60,7 +78,14 @@ class Breadcrumbs
 	 */
 	private static function close_nav()
 	{
-		return '</ol></nav>';
+		$html = '</ol></nav>';
+		
+		/**
+		 * Filter the breadcrumb navigation closing HTML.
+		 * 
+		 * @param string $html Closing HTML.
+		 */
+		return apply_filters('wp_utility_breadcrumb_close_nav', $html);
 	}
 
 	/**
@@ -689,7 +714,16 @@ class Breadcrumbs
 
 		$html .= '</li>';
 
-		return $html;
+		/**
+		 * Filter the breadcrumb item HTML.
+		 * 
+		 * @param string $html The breadcrumb item HTML.
+		 * @param string $text The breadcrumb text.
+		 * @param string $url The breadcrumb URL.
+		 * @param bool $is_current Whether this is the current page.
+		 * @param string $additional_class Additional CSS class.
+		 */
+		return apply_filters('wp_utility_breadcrumb_item', $html, $text, $url, $is_current, $additional_class);
 	}
 
 	/**
@@ -705,6 +739,14 @@ class Breadcrumbs
 	 */
 	private static function separator()
 	{
-		return '<li class="' . self::$class . '__separator"> ' . self::$separator . ' </li>';
+		$html = '<li class="' . self::$class . '__separator"> ' . self::$separator . ' </li>';
+		
+		/**
+		 * Filter the breadcrumb separator HTML.
+		 * 
+		 * @param string $html The separator HTML.
+		 * @param string $separator The separator text/symbol.
+		 */
+		return apply_filters('wp_utility_breadcrumb_separator', $html, self::$separator);
 	}
 }

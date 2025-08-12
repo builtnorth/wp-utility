@@ -1,4 +1,14 @@
 <?php
+/**
+ * Lazy Load First Block Utility
+ *
+ * Controls lazy loading behavior for blocks based on their parent
+ * context and position within the page.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Utilities
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Utilities;
 
@@ -15,6 +25,14 @@ class LazyLoadFirstBlock
 	public static function render($block, array $non_lazy_parents = [], bool $default_lazy = true)
 	{
 		$lazy = $default_lazy;
+
+		/**
+		 * Filter the list of parent blocks that should disable lazy loading.
+		 * 
+		 * @param array $non_lazy_parents Array of parent block names.
+		 * @param object $block The current block object.
+		 */
+		$non_lazy_parents = apply_filters('wp_utility_lazy_load_non_lazy_parents', $non_lazy_parents, $block);
 
 		if (
 			isset($block->block_type->parent) &&

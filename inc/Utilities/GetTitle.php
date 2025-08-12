@@ -1,4 +1,14 @@
 <?php
+/**
+ * Get Title Utility
+ *
+ * Provides a unified method to retrieve appropriate page titles
+ * across different WordPress contexts and content types.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Utilities
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Utilities;
 
