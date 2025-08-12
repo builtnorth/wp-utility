@@ -72,7 +72,7 @@ class Utility
 	 */
 	public static function imageSetup(...$args)
 	{
-		return ImageSetup::render(...$args);
+		return \BuiltNorth\WPUtility\Setup\ImageSetup::render(...$args);
 	}
 
 	/**
