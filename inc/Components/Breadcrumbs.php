@@ -704,7 +704,16 @@ class Breadcrumbs
 
 		$html .= '</li>';
 
-		return $html;
+		/**
+		 * Filter the breadcrumb item HTML.
+		 * 
+		 * @param string $html The breadcrumb item HTML.
+		 * @param string $text The breadcrumb text.
+		 * @param string $url The breadcrumb URL.
+		 * @param bool $is_current Whether this is the current page.
+		 * @param string $additional_class Additional CSS class.
+		 */
+		return apply_filters('wp_utility_breadcrumb_item', $html, $text, $url, $is_current, $additional_class);
 	}
 
 	/**
@@ -720,6 +729,14 @@ class Breadcrumbs
 	 */
 	private static function separator()
 	{
-		return '<li class="' . self::$class . '__separator"> ' . self::$separator . ' </li>';
+		$html = '<li class="' . self::$class . '__separator"> ' . self::$separator . ' </li>';
+		
+		/**
+		 * Filter the breadcrumb separator HTML.
+		 * 
+		 * @param string $html The separator HTML.
+		 * @param string $separator The separator text/symbol.
+		 */
+		return apply_filters('wp_utility_breadcrumb_separator', $html, self::$separator);
 	}
 }
