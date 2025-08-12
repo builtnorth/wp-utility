@@ -102,19 +102,38 @@ class ImageSetup
 		// Add support for custom images
 		add_theme_support('post-thumbnails');
 
-		// wide
-		add_image_size('wide_xlarge', 1600, 99999);
-		add_image_size('wide_large',  1200, 99999);
-		add_image_size('wide_medium', 800,  99999);
-		add_image_size('wide_small',  600,  99999);
-		add_image_size('wide_xsmall', 300,  99999);
+		// Default image sizes
+		$default_sizes = [
+			// wide
+			'wide_xlarge' => [1600, 99999, false],
+			'wide_large'  => [1200, 99999, false],
+			'wide_medium' => [800,  99999, false],
+			'wide_small'  => [600,  99999, false],
+			'wide_xsmall' => [300,  99999, false],
 
-		// square (1:1)
-		add_image_size('square_xlarge', 1200, 1200, true);
-		add_image_size('square_large',  800,  800,  true);
-		add_image_size('square_medium', 600,  600,  true);
-		add_image_size('square_small',  300,  300,  true);
-		add_image_size('square_xsmall', 150,  150,  true);
+			// square (1:1)
+			'square_xlarge' => [1200, 1200, true],
+			'square_large'  => [800,  800,  true],
+			'square_medium' => [600,  600,  true],
+			'square_small'  => [300,  300,  true],
+			'square_xsmall' => [150,  150,  true],
+		];
+
+		/**
+		 * Filter the image sizes before registration.
+		 * 
+		 * @param array $sizes Array of image sizes where key is the size name 
+		 *                     and value is an array of [width, height, crop].
+		 */
+		$sizes = apply_filters('wp_utility_image_sizes', $default_sizes);
+
+		// Register each image size
+		foreach ($sizes as $name => $dimensions) {
+			if (isset($dimensions[0], $dimensions[1])) {
+				$crop = isset($dimensions[2]) ? $dimensions[2] : false;
+				add_image_size($name, $dimensions[0], $dimensions[1], $crop);
+			}
+		}
 	}
 
 	/**
