@@ -47,19 +47,19 @@ class ImageSetup
 	{
 		if (is_null(self::$instance)) {
 			self::$instance = new self();
-			self::$instance->init();
+			self::$instance->initialize();
 		}
 
 		return self::$instance;
 	}
 
 	/**
-	 * Method to initialize.
+	 * Method to initialize hooks.
 	 *
 	 * @since   1.0.0
-	 * @access  public
+	 * @access  protected
 	 */
-	public function init()
+	protected function initialize()
 	{
 		add_filter('intermediate_image_sizes', array($this, 'remove_default_image_sizes'), 10, 1);
 		add_filter('max_srcset_image_width', array($this, 'update_max_srcset_image_width'), 10, 2);
@@ -177,6 +177,28 @@ class ImageSetup
 		return array_merge($sizes, $custom_names);
 	}
 
+	/**
+	 * Setup the image configuration.
+	 * 
+	 * @static
+	 * @return ImageSetup
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public static function setup()
+	{
+		return self::instance();
+	}
+
+	/**
+	 * Alias for setup() method for backward compatibility.
+	 * 
+	 * @deprecated Use setup() instead.
+	 * @static
+	 * @return ImageSetup
+	 * @since 1.0.0
+	 * @access public
+	 */
 	public static function render()
 	{
 		return self::instance();
