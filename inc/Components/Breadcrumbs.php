@@ -52,7 +52,15 @@ class Breadcrumbs
 	 */
 	private static function open_nav()
 	{
-		return '<nav class="' . self::$class . '"><ol class="' . self::$class . '__list">';
+		$html = '<nav class="' . self::$class . '"><ol class="' . self::$class . '__list">';
+		
+		/**
+		 * Filter the breadcrumb navigation opening HTML.
+		 * 
+		 * @param string $html Opening HTML.
+		 * @param string $class The breadcrumb class.
+		 */
+		return apply_filters('wp_utility_breadcrumb_open_nav', $html, self::$class);
 	}
 
 	/**
@@ -60,7 +68,14 @@ class Breadcrumbs
 	 */
 	private static function close_nav()
 	{
-		return '</ol></nav>';
+		$html = '</ol></nav>';
+		
+		/**
+		 * Filter the breadcrumb navigation closing HTML.
+		 * 
+		 * @param string $html Closing HTML.
+		 */
+		return apply_filters('wp_utility_breadcrumb_close_nav', $html);
 	}
 
 	/**
