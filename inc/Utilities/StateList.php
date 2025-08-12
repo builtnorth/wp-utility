@@ -1,4 +1,14 @@
 <?php
+/**
+ * State List Utility
+ *
+ * Provides a list of US states and territories with abbreviations
+ * for use in forms and dropdowns.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Utilities
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Utilities;
 

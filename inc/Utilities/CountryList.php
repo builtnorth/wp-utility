@@ -1,4 +1,14 @@
 <?php
+/**
+ * Country List Utility
+ *
+ * Provides a comprehensive list of countries with ISO codes
+ * for use in forms and dropdowns.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Utilities
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Utilities;
 

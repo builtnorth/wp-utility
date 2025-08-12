@@ -1,4 +1,14 @@
 <?php
+/**
+ * Button Component
+ *
+ * Renders flexible button or link elements with support for icons,
+ * styles, sizes, and screen reader text.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Components
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Components;
 

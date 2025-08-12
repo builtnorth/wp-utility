@@ -1,4 +1,14 @@
 <?php
+/**
+ * Lazy Load First Block Utility
+ *
+ * Controls lazy loading behavior for blocks based on their parent
+ * context and position within the page.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Utilities
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Utilities;
 

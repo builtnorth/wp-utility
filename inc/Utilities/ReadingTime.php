@@ -1,4 +1,14 @@
 <?php
+/**
+ * Reading Time Utility
+ *
+ * Calculates estimated reading time for content based on word count
+ * and configurable reading speed.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Utilities
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Utilities;
 

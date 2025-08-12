@@ -1,8 +1,12 @@
 <?php
-
 /**
- * Backward compatibility alias for Helper class.
+ * Helper Alias
+ *
+ * Backward compatibility alias for Helper class to maintain
+ * existing implementations after namespace reorganization.
  * 
+ * @package BuiltNorth\WPUtility
+ * @since 1.0.0
  * @deprecated Use BuiltNorth\WPUtility\Helpers\Helper instead
  */
 

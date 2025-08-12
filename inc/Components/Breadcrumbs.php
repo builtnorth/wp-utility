@@ -1,4 +1,14 @@
 <?php
+/**
+ * Breadcrumbs Component
+ *
+ * Generates semantic breadcrumb navigation with support for various
+ * WordPress content types including posts, pages, archives, and taxonomies.
+ *
+ * @package BuiltNorth\WPUtility
+ * @subpackage Components
+ * @since 1.0.0
+ */
 
 namespace BuiltNorth\WPUtility\Components;
 
