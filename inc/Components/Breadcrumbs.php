@@ -703,7 +703,7 @@ class Breadcrumbs
 			if ($additional_class) {
 				$current_class .= ' ' . self::$class . '__current--' . $additional_class;
 			}
-			$html .= '<strong class="' . $current_class . '" title="' . esc_attr($text) . '">' . $text . '</strong>';
+			$html .= '<span class="' . $current_class . '" title="' . esc_attr($text) . '">' . $text . '</span>';
 		} else {
 			$link_class = self::$class . '__link';
 			if ($additional_class) {
