@@ -17,6 +17,7 @@ class Breadcrumbs
 	private static $class;
 	private static $separator;
 	private static $home_title;
+	private static $nav_attributes;
 
 	public static function render(
 		$show_on_front = null,
@@ -24,11 +25,13 @@ class Breadcrumbs
 		$separator = '&raquo;',
 		$home_title = 'Home',
 		$prefix = null,
+		$nav_attributes = '',
 	) {
 		// Initialize class properties
-		self::$class = $class;
-		self::$separator = $separator;
-		self::$home_title = $home_title;
+		self::$class            = $class;
+		self::$separator        = $separator;
+		self::$home_title       = $home_title;
+		self::$nav_attributes   = is_string($nav_attributes) ? $nav_attributes : '';
 
 		// Don't display on homepage unless specifically requested
 		if (is_front_page() && !$show_on_front) {
@@ -62,13 +65,19 @@ class Breadcrumbs
 	 */
 	private static function open_nav()
 	{
-		$html = '<nav class="' . self::$class . '"><ol class="' . self::$class . '__list">';
-		
+		$list_class = esc_attr(self::$class . '__list');
+
+		if (self::$nav_attributes !== '') {
+			$html = '<nav ' . self::$nav_attributes . '><ol class="' . $list_class . '">';
+		} else {
+			$html = '<nav class="' . esc_attr(self::$class) . '"><ol class="' . $list_class . '">';
+		}
+
 		/**
 		 * Filter the breadcrumb navigation opening HTML.
-		 * 
+		 *
 		 * @param string $html Opening HTML.
-		 * @param string $class The breadcrumb class.
+		 * @param string $class The breadcrumb BEM prefix (e.g. wp-block-polaris-breadcrumbs).
 		 */
 		return apply_filters('wp_utility_breadcrumb_open_nav', $html, self::$class);
 	}
@@ -689,14 +698,17 @@ class Breadcrumbs
 	 */
 	private static function breadcrumb_item($text, $url = '', $additional_class = '', $is_current = false)
 	{
-		$class_suffix = $is_current ? '__item--current' : '';
-		$full_class = self::$class . '__item ' . self::$class . $class_suffix;
+		$full_class = self::$class . '__item';
+
+		if ($is_current) {
+			$full_class .= ' ' . self::$class . '__item--current';
+		}
 
 		if ($additional_class) {
 			$full_class .= ' ' . self::$class . '__item--' . $additional_class;
 		}
 
-		$html = '<li class="' . $full_class . '">';
+		$html = '<li class="' . esc_attr($full_class) . '">';
 
 		if ($is_current || empty($url)) {
 			$current_class = self::$class . '__current';

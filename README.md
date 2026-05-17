@@ -55,7 +55,8 @@ Component::breadcrumbs(
     class: 'breadcrumbs',
     separator: '»',
     home_title: 'Home',
-    prefix: 'You are here:'
+    prefix: 'You are here:',
+    nav_attributes: '', // Optional. Block wrapper attrs for <nav> (e.g. get_block_wrapper_attributes()).
 );
 ```
 
