@@ -94,8 +94,9 @@ class App
 					$instance->init();
 				}
 			} else {
-				// Log an error if the class is not found
-				error_log("Class $full_class_name not found.");
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+					error_log( "Class $full_class_name not found." );
+				}
 			}
 		}
 	}
