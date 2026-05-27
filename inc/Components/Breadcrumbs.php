@@ -393,11 +393,9 @@ class Breadcrumbs
 				);
 			}
 		} else {
-			// Handle custom post types
-			$post_type_archive = get_post_type_archive_link($post_type);
 			$html = self::breadcrumb_item(
 				$post_type_object->labels->name,
-				$post_type_archive,
+				PostTypeLandingUrl::resolve($post_type),
 				'post-type-' . $post_type,
 				false
 			);
@@ -576,13 +574,23 @@ class Breadcrumbs
 		if (is_single()) {
 			global $post;
 			
-			// Add post type archive
 			$post_type_obj = get_post_type_object($post->post_type);
-			if ($post_type_obj && $post_type_obj->has_archive) {
-				$breadcrumbs[] = [
-					'text' => $post_type_obj->labels->name,
-					'url' => get_post_type_archive_link($post->post_type)
-				];
+			if ($post_type_obj && $post->post_type !== 'post') {
+				$landing_url = PostTypeLandingUrl::resolve($post->post_type);
+				if ($landing_url !== '') {
+					$breadcrumbs[] = [
+						'text' => $post_type_obj->labels->name,
+						'url'  => $landing_url,
+					];
+				}
+			} elseif ($post->post_type === 'post') {
+				$page_for_posts = (int) get_option('page_for_posts');
+				if ($page_for_posts) {
+					$breadcrumbs[] = [
+						'text' => get_the_title($page_for_posts),
+						'url'  => get_permalink($page_for_posts),
+					];
+				}
 			}
 			
 			// Add current post
@@ -635,11 +643,14 @@ class Breadcrumbs
 			} elseif (is_tax()) {
 				$term = get_queried_object();
 				$post_type_obj = get_post_type_object(get_post_type());
-				if ($post_type_obj && $post_type_obj->has_archive) {
-					$breadcrumbs[] = [
-						'text' => $post_type_obj->labels->name,
-						'url' => get_post_type_archive_link(get_post_type())
-					];
+				if ($post_type_obj) {
+					$landing_url = PostTypeLandingUrl::resolve(get_post_type());
+					if ($landing_url !== '') {
+						$breadcrumbs[] = [
+							'text' => $post_type_obj->labels->name,
+							'url'  => $landing_url,
+						];
+					}
 				}
 				$breadcrumbs[] = [
 					'text' => $term->name,
@@ -667,10 +678,13 @@ class Breadcrumbs
 			} else {
 				$post_type_obj = get_post_type_object(get_post_type());
 				if ($post_type_obj) {
-					$breadcrumbs[] = [
-						'text' => $post_type_obj->labels->name,
-						'url' => get_post_type_archive_link(get_post_type())
-					];
+					$landing_url = PostTypeLandingUrl::resolve(get_post_type());
+					if ($landing_url !== '') {
+						$breadcrumbs[] = [
+							'text' => $post_type_obj->labels->name,
+							'url'  => $landing_url,
+						];
+					}
 				}
 			}
 		} elseif (is_search()) {
@@ -710,12 +724,18 @@ class Breadcrumbs
 
 		$html = '<li class="' . esc_attr($full_class) . '">';
 
-		if ($is_current || empty($url)) {
+		if ($is_current) {
 			$current_class = self::$class . '__current';
 			if ($additional_class) {
 				$current_class .= ' ' . self::$class . '__current--' . $additional_class;
 			}
-			$html .= '<span class="' . $current_class . '" title="' . esc_attr($text) . '">' . $text . '</span>';
+			$html .= '<span class="' . esc_attr($current_class) . '" title="' . esc_attr($text) . '">' . esc_html($text) . '</span>';
+		} elseif ($url === '' || $url === false) {
+			$text_class = self::$class . '__text';
+			if ($additional_class) {
+				$text_class .= ' ' . self::$class . '__text--' . $additional_class;
+			}
+			$html .= '<span class="' . esc_attr($text_class) . '" title="' . esc_attr($text) . '">' . esc_html($text) . '</span>';
 		} else {
 			$link_class = self::$class . '__link';
 			if ($additional_class) {
