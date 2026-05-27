@@ -89,9 +89,30 @@ Component::button(
 );
 ```
 
-**Filter:**
+**Filters:**
 
 - `wp_utility_button_block_prefix` - Customize button class prefix
+- `wp_utility_button_screen_reader_text` - Filter resolved screen reader text
+- `wp_utility_button_generic_link_labels` - Generic labels that receive post-title context in loops
+
+**Screen reader text:**
+
+```php
+$screen_reader = Button::resolve_screen_reader_text([
+    'explicit' => 'about our services',
+    'text' => 'Learn more',
+    'link' => $url,
+    'post_id' => get_the_ID(),
+    'is_permalink' => false,
+    'opens_in_new_tab' => true,
+    'text_domain' => 'my-plugin',
+]);
+
+Component::button(
+    // ...
+    screen_reader: $screen_reader,
+);
+```
 
 ### Image
 
