@@ -31,6 +31,29 @@ class Helper
 	{
 		return EscapeSvg::render($svg);
 	}
+
+	/**
+	 * Whether a block should render when hideWhenMetaEmpty is enabled.
+	 *
+	 * @param array<string, mixed> $attributes Block attributes.
+	 */
+	public static function metaGatedShouldRender(array $attributes, int $post_id): bool
+	{
+		return MetaGatedRender::should_render($attributes, $post_id);
+	}
+
+	/**
+	 * @param mixed $value Raw post meta value.
+	 */
+	public static function isValidIconMeta(mixed $value): bool
+	{
+		return MetaGatedRender::is_valid_icon_meta($value);
+	}
+
+	public static function resolveUrlFromMeta(string $meta_key, int $post_id): string
+	{
+		return MetaGatedRender::resolve_url_from_meta($meta_key, $post_id);
+	}
 	
 	// Legacy support - PHP method names are case-insensitive
 	// So Helper::EscapeSvg() will work the same as Helper::escapeSvg()
