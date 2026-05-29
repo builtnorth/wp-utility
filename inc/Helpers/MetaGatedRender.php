@@ -6,8 +6,12 @@ namespace BuiltNorth\WPUtility\Helpers;
 
 defined('ABSPATH') || exit;
 
+use WP_Block;
+
 /**
  * Shared meta-gated block render checks for dynamic blocks.
+ *
+ * @see \BuiltNorth\WPUtility\Blocks\MetaGatedBlockSupport Core block attribute registration and render filtering.
  */
 class MetaGatedRender
 {
@@ -85,5 +89,19 @@ class MetaGatedRender
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Resolve the post ID for a block render request.
+	 */
+	public static function resolve_post_id(?WP_Block $block = null): int
+	{
+		if ($block instanceof WP_Block && ! empty($block->context['postId'])) {
+			return (int) $block->context['postId'];
+		}
+
+		$post_id = get_the_ID();
+
+		return $post_id ? (int) $post_id : 0;
 	}
 }

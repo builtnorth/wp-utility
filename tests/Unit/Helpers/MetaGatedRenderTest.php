@@ -104,4 +104,17 @@ class MetaGatedRenderTest extends WPMockTestCase {
 			MetaGatedRender::resolve_url_from_meta('has_map_url', 5)
 		);
 	}
+
+	public function test_resolve_post_id_from_block_context(): void {
+		$block = $this->createMock( \WP_Block::class );
+		$block->context = [ 'postId' => 99 ];
+
+		$this->assertSame( 99, MetaGatedRender::resolve_post_id( $block ) );
+	}
+
+	public function test_resolve_post_id_falls_back_to_current_post(): void {
+		WP_Mock::userFunction('get_the_ID')->andReturn(12);
+
+		$this->assertSame(12, MetaGatedRender::resolve_post_id(null));
+	}
 }

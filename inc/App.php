@@ -74,6 +74,10 @@ class App
 	public function boot()
 	{
 		$this->load_classes();
+
+		if (class_exists(Blocks\MetaGatedBlockSupport::class)) {
+			Blocks\MetaGatedBlockSupport::init();
+		}
 	}
 
 	/**
