@@ -78,10 +78,6 @@ class App
 		if (class_exists(Blocks\MetaGatedBlockSupport::class)) {
 			Blocks\MetaGatedBlockSupport::init();
 		}
-
-		if (class_exists(Setup\FontPreloader::class)) {
-			Setup\FontPreloader::register();
-		}
 	}
 
 	/**
