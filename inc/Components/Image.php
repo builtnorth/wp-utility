@@ -16,24 +16,43 @@ namespace BuiltNorth\WPUtility\Components;
 class Image
 {
 	/**
-	 * Render an image
+	 * Build a responsive sizes attribute string.
 	 *
-	 * @param int    $id               The image ID.
-	 * @param string $class            Optional. The class to add to the image.
-	 * @param string $additional_classes Optional. Extra classes to add to the image.
-	 * @param string $custom_alt       Optional. The custom alt text to use for the image.
-	 * @param bool   $show_caption     Optional. Whether to show the caption.
-	 * @param bool   $lazy             Optional. Whether to use lazy loading.
-	 * @param string $wrap_class       Optional. The class to add to the figure.
-	 * @param bool   $include_figure   Optional. Whether to include the figure.
-	 * @param string $size             Optional. The size of the image.
-	 * @param string $max_width        Optional. The maximum width of the image (used to build default sizes).
-	 * @param string $style            Optional. The style to add to the image.
-	 * @param string $caption          Optional. Caption text.
-	 * @param string $alt              Optional. Alt text override.
-	 * @param string|null $sizes       Optional. Custom sizes attribute. When null the value is derived from
-	 *                                 $max_width: "(max-width: {max_width}) 100vw, {max_width}".
-	 * @return string The image HTML.
+	 * Returns a sizes value suitable for the `sizes` param of Image::render().
+	 * When passed to a lazy-loaded image, `auto` is automatically prepended so
+	 * supporting browsers can measure the rendered width instead.
+	 *
+	 * @param int $desktop_vw        Percentage of viewport width at desktop (e.g. 50 for a half-width column).
+	 * @param int $mobile_breakpoint Breakpoint in px below which the image is 100vw. Default 782 (WP/Gutenberg stack point).
+	 * @return string  e.g. "(max-width: 782px) 100vw, 50vw"
+	 */
+	public static function sizes(int $desktop_vw = 100, int $mobile_breakpoint = 782): string
+	{
+		if ($desktop_vw >= 100) {
+			return '100vw';
+		}
+		return "(max-width: {$mobile_breakpoint}px) 100vw, {$desktop_vw}vw";
+	}
+
+	/**
+	 * Render an image.
+	 *
+	 * @param int         $id                 The image ID.
+	 * @param string      $class              Optional. The class to add to the image.
+	 * @param string      $additional_classes Optional. Extra classes to add to the image.
+	 * @param string      $custom_alt         Optional. The custom alt text.
+	 * @param bool        $show_caption       Optional. Whether to show the caption.
+	 * @param bool        $lazy               Optional. Whether to use lazy loading.
+	 * @param string      $wrap_class         Optional. The class to add to the figure.
+	 * @param bool        $include_figure     Optional. Whether to include the figure.
+	 * @param string      $size               Optional. The WordPress image size.
+	 * @param string      $max_width          Optional. Max-width used to build the default sizes fallback.
+	 * @param string      $style              Optional. Inline style for the img element.
+	 * @param string      $caption            Optional. Caption text.
+	 * @param string      $alt                Optional. Alt text override.
+	 * @param string|null $sizes              Optional. Custom sizes value (use Image::sizes() to generate).
+	 *                                        When null, derived from $max_width. For lazy images, `auto` is
+	 *                                        automatically prepended as a progressive enhancement.
 	 */
 	public static function render(
 		$id = null,
@@ -55,6 +74,9 @@ class Image
 		if (empty($id)) {
 			return '';
 		}
+
+		// Capture before $lazy is reassigned to a string below.
+		$is_lazy = (bool) $lazy;
 
 		// Image src and srcset
 		$src = wp_get_attachment_image_url($id, $size) ?: '';
@@ -122,6 +144,12 @@ class Image
 		$sizes_attr = !empty($sizes)
 			? esc_attr((string) $sizes)
 			: '(max-width: ' . esc_attr((string) $max_width) . ') 100vw, ' . esc_attr((string) $max_width);
+
+		// Prepend `auto` for lazy images — supporting browsers measure the actual rendered width
+		// and use that instead of the static hint; non-supporting browsers use the fallback value.
+		if ($is_lazy) {
+			$sizes_attr = 'auto, ' . $sizes_attr;
+		}
 
 		// Build the img tag - ensure all values are strings for escaping functions
 		$img_tag = "<img
