@@ -63,8 +63,15 @@ class ImageSetup
 	{
 		add_filter('intermediate_image_sizes', array($this, 'remove_default_image_sizes'), 10, 1);
 		add_filter('max_srcset_image_width', array($this, 'update_max_srcset_image_width'), 10, 2);
-		add_action('after_setup_theme', array($this, 'add_image_sizes'));
+		// If after_setup_theme has already fired (e.g. called at priority > 10),
+		// invoke directly; otherwise defer to the action.
+		if ( did_action( 'after_setup_theme' ) ) {
+			$this->add_image_sizes();
+		} else {
+			add_action( 'after_setup_theme', array( $this, 'add_image_sizes' ) );
+		}
 		add_filter('image_size_names_choose', array($this, 'image_size_names'));
+		add_filter('wp_editor_set_quality', array($this, 'set_image_quality'), 10, 2);
 	}
 
 
@@ -89,6 +96,31 @@ class ImageSetup
 	}
 
 	/**
+	 * Set image upload quality.
+	 *
+	 * WebP quality is intentionally not set here — it is owned by
+	 * polaris-performance, which controls the WebP conversion pipeline
+	 * and exposes its own `polaris_performance_webp_quality` filter.
+	 *
+	 * @param int    $quality   Current quality (0-100).
+	 * @param string $mime_type Image MIME type.
+	 * @return int Filtered quality.
+	 */
+	public function set_image_quality( int $quality, string $mime_type ): int
+	{
+		if ( $mime_type === 'image/jpeg' ) {
+			/**
+			 * Filter JPEG upload quality.
+			 *
+			 * @param int $quality Default 82 (WordPress default).
+			 */
+			return (int) apply_filters( 'wp_utility_jpeg_quality', 82 );
+		}
+
+		return $quality;
+	}
+
+	/**
 	 * Set Max srcset size
 	 *
 	 * @return int Max width in pixels.
@@ -98,9 +130,12 @@ class ImageSetup
 		/**
 		 * Filter the maximum srcset image width.
 		 * 
-		 * @param int $max_width Maximum width in pixels. Default 1600.
+		 * 1800px covers 1440p displays at DPR 1 and standard 1080p displays.
+		 * Must match wide_xlarge width so that size is included in srcset.
+		 *
+		 * @param int $max_width Maximum width in pixels. Default 1800.
 		 */
-		return apply_filters('wp_utility_max_srcset_width', 1600);
+		return apply_filters('wp_utility_max_srcset_width', 1800);
 	}
 
 	/**
@@ -118,20 +153,15 @@ class ImageSetup
 		}
 
 		// Default image sizes
+		// Steps: 400 → 600 → 800 → 1200 → 1800 (~1.5× each step)
+		// Covers mobile DPR-1 through 1440p desktop DPR-1 / tablet DPR-2.
+		// max_srcset_image_width is set to 1800 to match wide_xlarge.
 		$default_sizes = [
-			// wide
-			'wide_xlarge' => [1600, 99999, false],
-			'wide_large'  => [1200, 99999, false],
-			'wide_medium' => [800,  99999, false],
-			'wide_small'  => [600,  99999, false],
-			'wide_xsmall' => [300,  99999, false],
-
-			// square (1:1)
-			'square_xlarge' => [1200, 1200, true],
-			'square_large'  => [800,  800,  true],
-			'square_medium' => [600,  600,  true],
-			'square_small'  => [300,  300,  true],
-			'square_xsmall' => [150,  150,  true],
+			'wide_xlarge'  => [1800, 99999, false], // 1440p DPR-1, 900px-wide container DPR-2
+			'wide_large'   => [1200, 99999, false], // 1080p/laptop DPR-1, 600px container DPR-2
+			'wide_medium'  => [800,  99999, false], // tablet DPR-1, mobile DPR-2
+			'wide_small'   => [600,  99999, false], // large mobile DPR-1, small tablet
+			'wide_xsmall'  => [400,  99999, false], // small mobile DPR-1
 		];
 
 		/**
