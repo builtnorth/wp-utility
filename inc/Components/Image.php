@@ -18,16 +18,21 @@ class Image
 	/**
 	 * Render an image
 	 *
-	 * @param int $id The image ID.
-	 * @param string $class Optional. The class to add to the image.
-	 * @param string $custom_alt Optional. The custom alt text to use for the image.
-	 * @param bool $show_caption Optional. Whether to show the caption.
-	 * @param bool $lazy Optional. Whether to use lazy loading.
-	 * @param string $wrap_class Optional. The class to add to the figure.
-	 * @param bool $include_figure Optional. Whether to include the figure.
-	 * @param string $size Optional. The size of the image.
-	 * @param string $max_width Optional. The maximum width of the image.
-	 * @param string $style Optional. The style to add to the image.
+	 * @param int    $id               The image ID.
+	 * @param string $class            Optional. The class to add to the image.
+	 * @param string $additional_classes Optional. Extra classes to add to the image.
+	 * @param string $custom_alt       Optional. The custom alt text to use for the image.
+	 * @param bool   $show_caption     Optional. Whether to show the caption.
+	 * @param bool   $lazy             Optional. Whether to use lazy loading.
+	 * @param string $wrap_class       Optional. The class to add to the figure.
+	 * @param bool   $include_figure   Optional. Whether to include the figure.
+	 * @param string $size             Optional. The size of the image.
+	 * @param string $max_width        Optional. The maximum width of the image (used to build default sizes).
+	 * @param string $style            Optional. The style to add to the image.
+	 * @param string $caption          Optional. Caption text.
+	 * @param string $alt              Optional. Alt text override.
+	 * @param string|null $sizes       Optional. Custom sizes attribute. When null the value is derived from
+	 *                                 $max_width: "(max-width: {max_width}) 100vw, {max_width}".
 	 * @return string The image HTML.
 	 */
 	public static function render(
@@ -44,6 +49,7 @@ class Image
 		$style = null,
 		$caption = '',
 		$alt = '',
+		$sizes = null,
 	) {
 		// Check the image ID is not empty
 		if (empty($id)) {
@@ -112,6 +118,11 @@ class Image
 			$style_attr = '';
 		}
 
+		// Build sizes attribute: use explicit $sizes when provided, otherwise derive from $max_width.
+		$sizes_attr = !empty($sizes)
+			? esc_attr((string) $sizes)
+			: '(max-width: ' . esc_attr((string) $max_width) . ') 100vw, ' . esc_attr((string) $max_width);
+
 		// Build the img tag - ensure all values are strings for escaping functions
 		$img_tag = "<img
 			$lazy 
@@ -119,7 +130,7 @@ class Image
 			alt='" . esc_attr((string) $final_alt) . "'
 			src='" . esc_url((string) $src) . "'
 			srcset='" . esc_attr((string) $srcset) . "'
-			sizes='(max-width: " . esc_attr((string) $max_width) . ") 100vw, " . esc_attr((string) $max_width) . "'
+			sizes='" . $sizes_attr . "'
 			width='" . esc_attr((string) $width) . "'
 			height='" . esc_attr((string) $height) . "'
 			$style_attr

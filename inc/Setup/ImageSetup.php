@@ -63,6 +63,7 @@ class ImageSetup
 	{
 		add_filter('intermediate_image_sizes', array($this, 'remove_default_image_sizes'), 10, 1);
 		add_filter('max_srcset_image_width', array($this, 'update_max_srcset_image_width'), 10, 2);
+		add_filter('wp_calculate_image_srcset', array($this, 'cap_srcset_to_requested_size'), 10, 5);
 		// If after_setup_theme has already fired (e.g. called at priority > 10),
 		// invoke directly; otherwise defer to the action.
 		if ( did_action( 'after_setup_theme' ) ) {
@@ -110,6 +111,40 @@ class ImageSetup
 		 * @param int $max_width Maximum width in pixels. Default 1800.
 		 */
 		return apply_filters('wp_utility_max_srcset_width', 1800);
+	}
+
+	/**
+	 * Do not offer srcset candidates wider than the requested image size.
+	 *
+	 * Stops a `wide_large` (1200px) request from also advertising 1800w in srcset.
+	 *
+	 * @param array<string, array<string, mixed>>|false $sources    Srcset sources.
+	 * @param array<int, int|bool>                        $size_array Requested size [width, height, crop].
+	 * @param string                                      $image_src  Image URL.
+	 * @param array<string, mixed>                        $image_meta Attachment metadata.
+	 * @param int                                         $attachment_id Attachment ID.
+	 * @return array<string, array<string, mixed>>|false
+	 */
+	public function cap_srcset_to_requested_size($sources, $size_array, $image_src, $image_meta, $attachment_id)
+	{
+		if (! is_array($sources) || empty($size_array[0])) {
+			return $sources;
+		}
+
+		$max_width = (int) $size_array[0];
+
+		// Only cap named intermediate sizes — leave full/original uncapped.
+		if ($max_width <= 0 || $max_width >= (int) apply_filters('wp_utility_max_srcset_width', 1800)) {
+			return $sources;
+		}
+
+		foreach (array_keys($sources) as $width) {
+			if ((int) $width > $max_width) {
+				unset($sources[$width]);
+			}
+		}
+
+		return $sources;
 	}
 
 	/**
