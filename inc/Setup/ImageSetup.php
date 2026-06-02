@@ -117,6 +117,8 @@ class ImageSetup
 	 * Do not offer srcset candidates wider than the requested image size.
 	 *
 	 * Stops a `wide_large` (1200px) request from also advertising 1800w in srcset.
+	 * Only applies when the requested width matches a registered intermediate size.
+	 * Display widths (e.g. core/site-logo `width: 195`) are ignored so srcset stays intact.
 	 *
 	 * @param array<string, array<string, mixed>>|false $sources    Srcset sources.
 	 * @param array<int, int|bool>                        $size_array Requested size [width, height, crop].
@@ -133,8 +135,11 @@ class ImageSetup
 
 		$max_width = (int) $size_array[0];
 
-		// Only cap named intermediate sizes — leave full/original uncapped.
 		if ($max_width <= 0 || $max_width >= (int) apply_filters('wp_utility_max_srcset_width', 1800)) {
+			return $sources;
+		}
+
+		if (! $this->is_registered_intermediate_width($max_width)) {
 			return $sources;
 		}
 
@@ -145,6 +150,30 @@ class ImageSetup
 		}
 
 		return $sources;
+	}
+
+	/**
+	 * Whether a width matches a registered intermediate image size.
+	 */
+	private function is_registered_intermediate_width(int $width): bool
+	{
+		static $registered_widths = null;
+
+		if ($registered_widths === null) {
+			$registered_widths = [];
+
+			foreach (wp_get_registered_image_subsizes() as $size) {
+				if (! is_array($size) || empty($size['width'])) {
+					continue;
+				}
+
+				$registered_widths[] = (int) $size['width'];
+			}
+
+			$registered_widths = array_values(array_unique($registered_widths));
+		}
+
+		return in_array($width, $registered_widths, true);
 	}
 
 	/**
