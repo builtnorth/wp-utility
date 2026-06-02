@@ -71,7 +71,6 @@ class ImageSetup
 			add_action( 'after_setup_theme', array( $this, 'add_image_sizes' ) );
 		}
 		add_filter('image_size_names_choose', array($this, 'image_size_names'));
-		add_filter('wp_editor_set_quality', array($this, 'set_image_quality'), 10, 2);
 	}
 
 
@@ -93,31 +92,6 @@ class ImageSetup
 		$targets = apply_filters('wp_utility_remove_default_sizes', $default_targets);
 		
 		return array_diff($sizes, $targets);
-	}
-
-	/**
-	 * Set image upload quality.
-	 *
-	 * WebP quality is intentionally not set here — it is owned by
-	 * polaris-performance, which controls the WebP conversion pipeline
-	 * and exposes its own `polaris_performance_webp_quality` filter.
-	 *
-	 * @param int    $quality   Current quality (0-100).
-	 * @param string $mime_type Image MIME type.
-	 * @return int Filtered quality.
-	 */
-	public function set_image_quality( int $quality, string $mime_type ): int
-	{
-		if ( $mime_type === 'image/jpeg' ) {
-			/**
-			 * Filter JPEG upload quality.
-			 *
-			 * @param int $quality Default 82 (WordPress default).
-			 */
-			return (int) apply_filters( 'wp_utility_jpeg_quality', 82 );
-		}
-
-		return $quality;
 	}
 
 	/**
