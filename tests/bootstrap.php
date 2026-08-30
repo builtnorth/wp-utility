@@ -81,3 +81,10 @@ if ( ! class_exists( 'WP_Error' ) ) {
 		}
 	}
 }
+
+if ( ! class_exists( 'WP_Block' ) ) {
+	class WP_Block {
+		/** @var array<string, mixed> */
+		public array $context = [];
+	}
+}
