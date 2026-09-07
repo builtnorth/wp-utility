@@ -2,9 +2,10 @@
 /**
  * Helper Alias
  *
- * Backward compatibility alias for Helper class to maintain
- * existing implementations after namespace reorganization.
- * 
+ * Backward compatibility stub for Helper after namespace reorganization.
+ * Real class stubs (not class_alias) so Composer classmap-authoritative
+ * dumps still resolve BuiltNorth\WPUtility\Helper.
+ *
  * @package BuiltNorth\WPUtility
  * @since 1.0.0
  * @deprecated Use BuiltNorth\WPUtility\Helpers\Helper instead
@@ -12,4 +13,5 @@
 
 namespace BuiltNorth\WPUtility;
 
-class_alias('BuiltNorth\WPUtility\Helpers\Helper', 'BuiltNorth\WPUtility\Helper');
+class Helper extends Helpers\Helper {
+}
