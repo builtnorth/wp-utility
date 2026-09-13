@@ -569,7 +569,14 @@ class Breadcrumbs
 			'text' => 'Home',
 			'url' => home_url('/')
 		];
-		
+
+		// The front page is the trail's root. A static front page also
+		// satisfies is_page(), which would append it a second time as the
+		// "current" item — mirror render()'s front-page guard instead.
+		if (is_front_page()) {
+			return $breadcrumbs;
+		}
+
 		// Generate breadcrumbs based on current page type
 		if (is_single()) {
 			global $post;
