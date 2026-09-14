@@ -35,6 +35,13 @@ class ImageSetup
 	protected static $instance = null;
 
 	/**
+	 * Per-process memo of registered intermediate image size widths.
+	 *
+	 * @var int[]|null
+	 */
+	private static ?array $registered_widths = null;
+
+	/**
 	 * Singleton method.
 	 *
 	 * @static
@@ -157,9 +164,7 @@ class ImageSetup
 	 */
 	private function is_registered_intermediate_width(int $width): bool
 	{
-		static $registered_widths = null;
-
-		if ($registered_widths === null) {
+		if (self::$registered_widths === null) {
 			$registered_widths = [];
 
 			foreach (wp_get_registered_image_subsizes() as $size) {
@@ -170,10 +175,23 @@ class ImageSetup
 				$registered_widths[] = (int) $size['width'];
 			}
 
-			$registered_widths = array_values(array_unique($registered_widths));
+			self::$registered_widths = array_values(array_unique($registered_widths));
 		}
 
-		return in_array($width, $registered_widths, true);
+		return in_array($width, self::$registered_widths, true);
+	}
+
+	/**
+	 * Bust the per-process registered-image-widths memo.
+	 *
+	 * Tests exercising cap_srcset_to_requested_size() must call this in
+	 * setUp() — the memo above persists across instances for the life of
+	 * the PHP process, so a test registering different image sizes than an
+	 * earlier test would otherwise see stale data.
+	 */
+	public static function reset_registered_widths(): void
+	{
+		self::$registered_widths = null;
 	}
 
 	/**

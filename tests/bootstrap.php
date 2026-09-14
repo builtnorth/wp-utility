@@ -74,43 +74,6 @@ if ( ! function_exists( 'get_stylesheet_directory_uri' ) ) {
 	}
 }
 
-// Mock common WordPress classes if needed
-if ( ! class_exists( 'WP_Error' ) ) {
-	class WP_Error {
-		private $errors = array();
-		private $error_data = array();
-
-		public function __construct( $code = '', $message = '', $data = '' ) {
-			if ( ! empty( $code ) ) {
-				$this->errors[ $code ][] = $message;
-				if ( ! empty( $data ) ) {
-					$this->error_data[ $code ] = $data;
-				}
-			}
-		}
-
-		public function get_error_code() {
-			$codes = array_keys( $this->errors );
-			return $codes ? $codes[0] : '';
-		}
-
-		public function get_error_message( $code = '' ) {
-			if ( empty( $code ) ) {
-				$code = $this->get_error_code();
-			}
-			$messages = isset( $this->errors[ $code ] ) ? $this->errors[ $code ] : array();
-			return $messages ? $messages[0] : '';
-		}
-
-		public function has_errors() {
-			return ! empty( $this->errors );
-		}
-	}
-}
-
-if ( ! class_exists( 'WP_Block' ) ) {
-	class WP_Block {
-		/** @var array<string, mixed> */
-		public array $context = [];
-	}
-}
+// Shared WP core class stand-ins (WP_Error, WP_Block, etc.) — lives in
+// whichever vendor/ $autoloader above actually resolved to (local or root).
+require_once dirname( $autoloader ) . '/builtnorth/wp-mock-stand-ins/inc/stand-ins.php';
