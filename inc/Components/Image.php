@@ -164,6 +164,23 @@ class Image
 			$style_attr
 		/>";
 
+		/**
+		 * Filters the built <img> tag before output.
+		 *
+		 * Same filter and signature WordPress core applies to content images
+		 * (wp_filter_content_tags()) — reusing it here, rather than inventing a
+		 * component-specific hook, lets any existing consumer of the standard
+		 * `wp_content_img_tag` filter (image format converters, lazy-load
+		 * plugins, etc.) apply to every block/template built on Image::render(),
+		 * since this component constructs its <img> manually and would
+		 * otherwise never pass through core's own content-image filtering.
+		 *
+		 * @param string $img_tag Full img tag with attributes.
+		 * @param string $context Context identifier.
+		 * @param int    $id      The image attachment ID.
+		 */
+		$img_tag = apply_filters( 'wp_content_img_tag', $img_tag, 'wp_utility_image', (int) $id );
+
 		// Include figure
 		if ($include_figure) {
 			echo "<figure class='" . esc_attr($class) . "__figure'>
