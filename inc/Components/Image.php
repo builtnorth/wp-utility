@@ -16,22 +16,104 @@ namespace BuiltNorth\WPUtility\Components;
 class Image
 {
 	/**
+	 * Fallback content width in px, used when the active theme does not expose
+	 * a usable `layout.contentSize`.
+	 */
+	public const DEFAULT_CONTENT_WIDTH = 1280;
+
+	/**
+	 * Per-process memo of the resolved content width.
+	 *
+	 * @var int|null
+	 */
+	private static $content_width = null;
+
+	/**
 	 * Build a responsive sizes attribute string.
 	 *
 	 * Returns a sizes value suitable for the `sizes` param of Image::render().
 	 * When passed to a lazy-loaded image, `auto` is automatically prepended so
 	 * supporting browsers can measure the rendered width instead.
 	 *
-	 * @param int $desktop_vw        Percentage of viewport width at desktop (e.g. 50 for a half-width column).
-	 * @param int $mobile_breakpoint Breakpoint in px below which the image is 100vw. Default 782 (WP/Gutenberg stack point).
-	 * @return string  e.g. "(max-width: 782px) 100vw, 50vw"
+	 * The desktop term is capped at the theme's content width. A bare `50vw`
+	 * keeps growing with the viewport, so on a 2560px display it claims 1280px
+	 * for a column that a 1280px-capped layout actually renders at ~640px —
+	 * the hint overshoots most on the widest screens, which is exactly where
+	 * the wasted bytes are largest.
+	 *
+	 * @param int      $desktop_vw        Percentage of viewport width at desktop (e.g. 50 for a half-width column).
+	 * @param int      $mobile_breakpoint Breakpoint in px below which the image is 100vw. Default 782 (WP/Gutenberg stack point).
+	 * @param int|null $content_width     Optional. Content width in px to cap against. Defaults to the
+	 *                                    theme's resolved `layout.contentSize`.
+	 * @return string  e.g. "(max-width: 782px) 100vw, min(50vw, 640px)"
 	 */
-	public static function sizes(int $desktop_vw = 100, int $mobile_breakpoint = 782): string
+	public static function sizes(int $desktop_vw = 100, int $mobile_breakpoint = 782, ?int $content_width = null): string
 	{
 		if ($desktop_vw >= 100) {
 			return '100vw';
 		}
-		return "(max-width: {$mobile_breakpoint}px) 100vw, {$desktop_vw}vw";
+
+		// Guard against a nonsensical share producing a negative/zero cap.
+		if ($desktop_vw < 1) {
+			$desktop_vw = 1;
+		}
+
+		$cap = $content_width ?? self::resolve_content_width();
+		$desktop_px = (int) round($cap * $desktop_vw / 100);
+
+		return "(max-width: {$mobile_breakpoint}px) 100vw, min({$desktop_vw}vw, {$desktop_px}px)";
+	}
+
+	/**
+	 * Resolve the theme's content width in px.
+	 *
+	 * Read at runtime rather than hardcoded: a user's global-styles override
+	 * takes precedence over the theme's own theme.json, so the file value can
+	 * be stale (observed: theme.json 1240px vs. 1280px resolved).
+	 *
+	 * Falls back to DEFAULT_CONTENT_WIDTH when the value is unavailable or is
+	 * not expressed in px. `contentSize` is free-form CSS — `1280px` parses,
+	 * but `80rem`, `90%` or `clamp(...)` cannot be converted here, and a bad
+	 * conversion would emit a wrong cap rather than no cap. wp_get_global_settings()
+	 * also resolves the merged theme.json tree, which is not reliable before
+	 * after_setup_theme, and this package does not require a block theme.
+	 */
+	private static function resolve_content_width(): int
+	{
+		if (self::$content_width !== null) {
+			return self::$content_width;
+		}
+
+		$width = self::DEFAULT_CONTENT_WIDTH;
+
+		if (function_exists('wp_get_global_settings')) {
+			$layout = wp_get_global_settings(['layout']);
+			$content_size = is_array($layout) ? ($layout['contentSize'] ?? '') : '';
+
+			// Only px is convertible; anything else keeps the fallback.
+			if (is_string($content_size) && preg_match('/^\s*(\d+(?:\.\d+)?)\s*px\s*$/i', $content_size, $matches)) {
+				$parsed = (int) round((float) $matches[1]);
+				if ($parsed > 0) {
+					$width = $parsed;
+				}
+			}
+		}
+
+		self::$content_width = $width;
+
+		return $width;
+	}
+
+	/**
+	 * Bust the per-process content-width memo.
+	 *
+	 * Tests that switch themes or global settings must call this in setUp() —
+	 * the memo persists for the life of the PHP process and would otherwise
+	 * serve a width resolved under an earlier fixture.
+	 */
+	public static function reset_content_width(): void
+	{
+		self::$content_width = null;
 	}
 
 	/**

@@ -67,13 +67,15 @@ class Component
 	/**
 	 * Build a responsive sizes attribute string.
 	 *
-	 * @param int $desktop_vw        Percentage of viewport width at desktop (e.g. 50 for a half-width column).
-	 * @param int $mobile_breakpoint Breakpoint in px below which the image is 100vw. Default 782.
+	 * @param int      $desktop_vw        Percentage of viewport width at desktop (e.g. 50 for a half-width column).
+	 * @param int      $mobile_breakpoint Breakpoint in px below which the image is 100vw. Default 782.
+	 * @param int|null $content_width     Optional. Content width in px to cap against. Defaults to the
+	 *                                    theme's resolved `layout.contentSize`.
 	 * @return string
 	 */
-	public static function sizes(int $desktop_vw = 100, int $mobile_breakpoint = 782): string
+	public static function sizes(int $desktop_vw = 100, int $mobile_breakpoint = 782, ?int $content_width = null): string
 	{
-		return Image::sizes($desktop_vw, $mobile_breakpoint);
+		return Image::sizes($desktop_vw, $mobile_breakpoint, $content_width);
 	}
 
 	/**
