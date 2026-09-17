@@ -55,8 +55,10 @@ class PhoneNumber
 	/**
 	 * Build a `tel:` link for a phone number.
 	 *
-	 * The visible label keeps the phone number as given (not the E.164
-	 * form) since display formatting is a separate concern from the href.
+	 * The href uses the E.164 form when the number can be normalized (see
+	 * to_e164()), so it matches the same number's `telephone` value in
+	 * structured data. The visible label always keeps the phone number as
+	 * given — display formatting is a separate concern from the href.
 	 *
 	 * @param string $phone Raw phone number.
 	 * @return string HTML anchor, or an escaped text fallback when the number has no digits to link.
@@ -67,7 +69,10 @@ class PhoneNumber
 			return '';
 		}
 
-		$digits = preg_replace('/[^\d+]/', '', $phone);
+		$normalized = self::to_e164($phone);
+		$digits = str_starts_with($normalized, '+')
+			? $normalized
+			: preg_replace('/[^\d+]/', '', $phone);
 		$href = $digits !== '' && $digits !== null ? 'tel:' . $digits : '';
 
 		if ($href === '') {

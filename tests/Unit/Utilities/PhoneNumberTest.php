@@ -41,12 +41,16 @@ class PhoneNumberTest extends WPMockTestCase {
 
 	// -- tel_link() ----------------------------------------------------
 
-	public function test_tel_link_wraps_digits_in_an_anchor(): void {
+	/**
+	 * The href uses the E.164 form so it matches the same number's schema
+	 * `telephone` value; the visible label keeps the original formatting.
+	 */
+	public function test_tel_link_normalizes_the_href_to_e164(): void {
 		WP_Mock::userFunction('esc_attr')->andReturnUsing(static fn($text) => $text);
 		WP_Mock::userFunction('esc_html')->andReturnUsing(static fn($text) => $text);
 
 		$this->assertSame(
-			"<a href='tel:5551234567'>(555) 123-4567</a>",
+			"<a href='tel:+15551234567'>(555) 123-4567</a>",
 			PhoneNumber::tel_link('(555) 123-4567')
 		);
 	}
@@ -58,6 +62,21 @@ class PhoneNumberTest extends WPMockTestCase {
 		$this->assertSame(
 			"<a href='tel:+15551234567'>+1 555 123 4567</a>",
 			PhoneNumber::tel_link('+1 555 123 4567')
+		);
+	}
+
+	/**
+	 * A number to_e164() can't confidently normalize (not 10/11 NANP digits,
+	 * no leading +) still gets a best-effort digit-stripped href rather than
+	 * losing the link entirely.
+	 */
+	public function test_tel_link_falls_back_to_stripped_digits_when_unnormalizable(): void {
+		WP_Mock::userFunction('esc_attr')->andReturnUsing(static fn($text) => $text);
+		WP_Mock::userFunction('esc_html')->andReturnUsing(static fn($text) => $text);
+
+		$this->assertSame(
+			"<a href='tel:5551234'>555-1234</a>",
+			PhoneNumber::tel_link('555-1234')
 		);
 	}
 
