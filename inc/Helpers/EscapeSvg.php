@@ -38,6 +38,7 @@ class EscapeSvg
 				'width' => true,
 				'height' => true,
 				'viewbox' => true,
+				'preserveaspectratio' => true,
 				'fill' => true,
 				'stroke' => true,
 				'stroke-width' => true,
@@ -158,6 +159,64 @@ class EscapeSvg
 		);
 
 		// Use wp_kses with our allowed SVG tags
-		return wp_kses($svg_content, $allowed_svg);
+		return self::restore_attribute_case(wp_kses($svg_content, $allowed_svg));
+	}
+
+	/**
+	 * Restore camelCase names that wp_kses() lowercases.
+	 *
+	 * wp_kses() lowercases every element and attribute name, which is correct
+	 * for HTML but wrong for SVG: SVG is case-sensitive, so `viewBox` becomes
+	 * `viewbox` and browsers ignore it. Losing the viewport leaves the graphic
+	 * with no intrinsic size, so it renders blank anywhere it is drawn as a
+	 * CSS mask or background image.
+	 *
+	 * Only names already on the allowlist above are restored — this puts back
+	 * the correct casing, it does not widen what is permitted.
+	 *
+	 * @param string $svg Sanitized SVG markup.
+	 * @return string SVG markup with SVG-correct casing.
+	 */
+	protected static function restore_attribute_case($svg)
+	{
+		if (!is_string($svg) || $svg === '') {
+			return '';
+		}
+
+		$attributes = [
+			'viewbox'             => 'viewBox',
+			'preserveaspectratio' => 'preserveAspectRatio',
+			'gradientunits'       => 'gradientUnits',
+			'gradienttransform'   => 'gradientTransform',
+			'patternunits'        => 'patternUnits',
+			'patterntransform'    => 'patternTransform',
+			'clippathunits'       => 'clipPathUnits',
+			'maskunits'           => 'maskUnits',
+			'maskcontentunits'    => 'maskContentUnits',
+			'stopcolor'           => 'stop-color',
+			'stopopacity'         => 'stop-opacity',
+		];
+
+		foreach ($attributes as $lower => $proper) {
+			$result = preg_replace('/\b' . $lower . '=/i', $proper . '=', $svg);
+			$svg    = is_string($result) ? $result : $svg;
+		}
+
+		$elements = [
+			'lineargradient' => 'linearGradient',
+			'radialgradient' => 'radialGradient',
+			'clippath'       => 'clipPath',
+			'foreignobject'  => 'foreignObject',
+		];
+
+		foreach ($elements as $lower => $proper) {
+			// foreignObject is not on the allowlist, so it never survives to
+			// here; it is listed only so the mapping stays complete if the
+			// allowlist ever changes.
+			$result = preg_replace('/<(\/?)' . $lower . '\b/i', '<$1' . $proper, $svg);
+			$svg    = is_string($result) ? $result : $svg;
+		}
+
+		return $svg;
 	}
 }
