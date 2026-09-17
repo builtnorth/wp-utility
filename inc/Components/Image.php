@@ -125,7 +125,7 @@ class Image
 	 * @param string      $custom_alt         Optional. The custom alt text.
 	 * @param bool        $show_caption       Optional. Whether to show the caption.
 	 * @param bool        $lazy               Optional. Whether to use lazy loading.
-	 * @param string      $wrap_class         Optional. The class to add to the figure.
+	 * @param string      $wrap_class         Optional. Extra class added to the figure, alongside `{$class}__figure`.
 	 * @param bool        $include_figure     Optional. Whether to include the figure.
 	 * @param string      $size               Optional. The WordPress image size.
 	 * @param string      $max_width          Optional. Max-width used to build the default sizes fallback.
@@ -152,99 +152,34 @@ class Image
 		$alt = '',
 		$sizes = null,
 	) {
-		// Check the image ID is not empty
 		if (empty($id)) {
 			return '';
 		}
 
-		// Capture before $lazy is reassigned to a string below.
+		// Captured before self::lazy_loading_attr() turns $lazy into an attribute string.
 		$is_lazy = (bool) $lazy;
 
-		// Image src and srcset
-		$src = wp_get_attachment_image_url($id, $size) ?: '';
-		$srcset = wp_get_attachment_image_srcset($id, $size) ?: '';
-
-		// Image alt and caption
-		$image_alt = get_post_meta($id, '_wp_attachment_image_alt', true) ?: '';
-		$image_caption = wp_get_attachment_caption($id) ?: '';
-
-		// Image attributes
-		$attributes = wp_get_attachment_image_src($id, $size);
-
-		// Set width & height - handle SVG files which may not have dimensions
-		$width = (isset($attributes[1]) && $attributes[1]) ? (string) $attributes[1] : '';
-		$height = (isset($attributes[2]) && $attributes[2]) ? (string) $attributes[2] : '';
-		
-		// For SVG files, check if we can get dimensions from the file itself
-		if (empty($width) || empty($height)) {
-			$mime_type = get_post_mime_type($id);
-			if ($mime_type === 'image/svg+xml') {
-				// SVGs don't have inherent dimensions in WordPress metadata
-				// Set reasonable defaults or leave empty for responsive SVGs
-				$width = '';
-				$height = '';
-			}
-		}
-
-		// Set alt text - use parameter alt if provided, otherwise custom_alt, otherwise image_alt
-		$final_alt = '';
-		if (!empty($alt)) {
-			$final_alt = (string) $alt;
-		} elseif (!empty($custom_alt)) {
-			$final_alt = (string) $custom_alt;
-		} elseif (!empty($image_alt)) {
-			$final_alt = (string) $image_alt;
-		}
-		
-		// add class
 		$class = $class ? esc_attr((string) $class) : 'image';
-
-		// add additional classes
 		$additional_classes = $additional_classes ? (string) $additional_classes : '';
 
-		// Add caption
-		$caption_str = (string) $caption;
-		$caption_html = ($show_caption === true && !empty($caption_str)) ? '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($caption_str) . '</figcaption>' : '';
+		[$width, $height] = self::resolve_dimensions($id, $size);
+		$final_alt = self::resolve_alt($id, $alt, $custom_alt);
+		$sizes_attr = self::sizes_attr($sizes, $max_width, $is_lazy);
+		$style_attr = self::style_attr($style);
+		$lazy_attr = self::lazy_loading_attr($lazy);
 
-		// Set lazy loading
-		$lazy = $lazy ? 'loading=lazy decoding=async' : 'loading=eager decoding=sync fetchpriority="high"';
-
-		// Add style to img attributes if provided
-		if ($style) {
-			// Handle both string and array styles
-			if (is_array($style)) {
-				$style_string = implode('; ', array_filter($style));
-			} else {
-				$style_string = $style;
-			}
-			$style_attr = " style='" . esc_attr($style_string) . "'";
-		} else {
-			$style_attr = '';
-		}
-
-		// Build sizes attribute: use explicit $sizes when provided, otherwise derive from $max_width.
-		$sizes_attr = !empty($sizes)
-			? esc_attr((string) $sizes)
-			: '(max-width: ' . esc_attr((string) $max_width) . ') 100vw, ' . esc_attr((string) $max_width);
-
-		// Prepend `auto` for lazy images — supporting browsers measure the actual rendered width
-		// and use that instead of the static hint; non-supporting browsers use the fallback value.
-		if ($is_lazy) {
-			$sizes_attr = 'auto, ' . $sizes_attr;
-		}
-
-		// Build the img tag - ensure all values are strings for escaping functions
-		$img_tag = "<img
-			$lazy 
-			class='" . esc_attr($class . "__img " . $additional_classes) . "'
-			alt='" . esc_attr((string) $final_alt) . "'
-			src='" . esc_url((string) $src) . "'
-			srcset='" . esc_attr((string) $srcset) . "'
-			sizes='" . $sizes_attr . "'
-			width='" . esc_attr((string) $width) . "'
-			height='" . esc_attr((string) $height) . "'
+		$img_tag = self::build_img_tag(
+			$lazy_attr,
+			$class,
+			$additional_classes,
+			$final_alt,
+			wp_get_attachment_image_url($id, $size) ?: '',
+			wp_get_attachment_image_srcset($id, $size) ?: '',
+			$sizes_attr,
+			$width,
+			$height,
 			$style_attr
-		/>";
+		);
 
 		/**
 		 * Filters the built <img> tag before output.
@@ -261,16 +196,153 @@ class Image
 		 * @param string $context Context identifier.
 		 * @param int    $id      The image attachment ID.
 		 */
-		$img_tag = apply_filters( 'wp_content_img_tag', $img_tag, 'wp_utility_image', (int) $id );
+		$img_tag = apply_filters('wp_content_img_tag', $img_tag, 'wp_utility_image', (int) $id);
 
-		// Include figure
-		if ($include_figure) {
-			echo "<figure class='" . esc_attr($class) . "__figure'>
-				$img_tag
-				$caption_html 
-			</figure>";
-		} else {
+		if (! $include_figure) {
 			echo $img_tag;
+			return;
 		}
+
+		$caption_html = self::caption_html($class, $show_caption, $caption);
+		echo self::build_figure_tag($class, $wrap_class, $img_tag, $caption_html);
+	}
+
+	/**
+	 * Resolve width/height, handling SVGs which have no inherent dimensions in
+	 * WordPress metadata.
+	 *
+	 * @return array{0: string, 1: string} [$width, $height]
+	 */
+	private static function resolve_dimensions($id, $size): array
+	{
+		$attributes = wp_get_attachment_image_src($id, $size);
+
+		$width = (isset($attributes[1]) && $attributes[1]) ? (string) $attributes[1] : '';
+		$height = (isset($attributes[2]) && $attributes[2]) ? (string) $attributes[2] : '';
+
+		if (($width === '' || $height === '') && get_post_mime_type($id) === 'image/svg+xml') {
+			$width = '';
+			$height = '';
+		}
+
+		return [$width, $height];
+	}
+
+	/**
+	 * Resolve alt text: explicit $alt param wins, then $custom_alt, then the
+	 * attachment's own stored alt text.
+	 */
+	private static function resolve_alt($id, $alt, $custom_alt): string
+	{
+		if (! empty($alt)) {
+			return (string) $alt;
+		}
+
+		if (! empty($custom_alt)) {
+			return (string) $custom_alt;
+		}
+
+		$image_alt = get_post_meta($id, '_wp_attachment_image_alt', true) ?: '';
+
+		return (string) $image_alt;
+	}
+
+	/**
+	 * Build the (already-escaped) sizes attribute value.
+	 *
+	 * Uses the explicit $sizes value when given, otherwise derives one from
+	 * $max_width. `auto` is prepended for lazy images so supporting browsers
+	 * measure the rendered width instead of using the static hint.
+	 */
+	private static function sizes_attr($sizes, $max_width, bool $is_lazy): string
+	{
+		$sizes_attr = !empty($sizes)
+			? esc_attr((string) $sizes)
+			: '(max-width: ' . esc_attr((string) $max_width) . ') 100vw, ' . esc_attr((string) $max_width);
+
+		return $is_lazy ? 'auto, ' . $sizes_attr : $sizes_attr;
+	}
+
+	/**
+	 * Build the ` style='...'` attribute fragment (including the leading
+	 * space), or an empty string when no style is given.
+	 *
+	 * @param string|array<int, string>|null $style
+	 */
+	private static function style_attr($style): string
+	{
+		if (! $style) {
+			return '';
+		}
+
+		$style_string = is_array($style) ? implode('; ', array_filter($style)) : $style;
+
+		return " style='" . esc_attr($style_string) . "'";
+	}
+
+	/**
+	 * Build the loading/decoding attribute fragment for the <img> tag.
+	 */
+	private static function lazy_loading_attr($lazy): string
+	{
+		return $lazy ? 'loading=lazy decoding=async' : 'loading=eager decoding=sync fetchpriority="high"';
+	}
+
+	/**
+	 * Build the <figcaption>, or an empty string when no caption should show.
+	 */
+	private static function caption_html(string $class, $show_caption, $caption): string
+	{
+		$caption_str = (string) $caption;
+
+		if ($show_caption !== true || $caption_str === '') {
+			return '';
+		}
+
+		return '<figcaption class="' . esc_attr($class) . '__caption">' . esc_html($caption_str) . '</figcaption>';
+	}
+
+	/**
+	 * Assemble the <img> tag. All values must already be attribute-safe
+	 * (escaped) except $sizes_attr, which self::sizes_attr() already escapes
+	 * internally before the unescaped `auto, ` prefix is added.
+	 */
+	private static function build_img_tag(
+		string $lazy_attr,
+		string $class,
+		string $additional_classes,
+		string $final_alt,
+		string $src,
+		string $srcset,
+		string $sizes_attr,
+		string $width,
+		string $height,
+		string $style_attr
+	): string {
+		return "<img
+			" . $lazy_attr . ' ' . "
+			class='" . esc_attr($class . "__img " . $additional_classes) . "'
+			alt='" . esc_attr($final_alt) . "'
+			src='" . esc_url($src) . "'
+			srcset='" . esc_attr($srcset) . "'
+			sizes='" . $sizes_attr . "'
+			width='" . esc_attr($width) . "'
+			height='" . esc_attr($height) . "'
+			$style_attr
+		/>";
+	}
+
+	/**
+	 * Assemble the <figure> wrapper. $wrap_class is appended alongside the
+	 * standard `{$class}__figure` class rather than replacing it.
+	 */
+	private static function build_figure_tag(string $class, $wrap_class, string $img_tag, string $caption_html): string
+	{
+		$figure_class = trim($class . '__figure ' . (string) $wrap_class);
+
+		return "<figure class='" . esc_attr($figure_class) . "'>
+				" . $img_tag . "
+				" . $caption_html . ' ' . "
+			</figure>";
 	}
 }

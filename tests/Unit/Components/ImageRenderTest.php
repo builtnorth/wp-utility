@@ -95,8 +95,10 @@ class ImageRenderTest extends WPMockTestCase {
 		/>";
 	}
 
-	private function build_figure(string $class, string $img_tag, string $caption_html = ''): string {
-		return "<figure class='" . $class . "__figure'>
+	private function build_figure(string $class, string $img_tag, string $caption_html = '', string $wrap_class = 'standard'): string {
+		$figure_class = trim($class . '__figure ' . $wrap_class);
+
+		return "<figure class='" . $figure_class . "'>
 				" . $img_tag . "
 				" . $caption_html . ' ' . "
 			</figure>";
@@ -318,5 +320,37 @@ class ImageRenderTest extends WPMockTestCase {
 		$this->expectOutputString($this->build_figure('image', $img_tag));
 
 		Image::render(1, null, 'extra classes');
+	}
+
+	public function test_wrap_class_is_appended_to_the_figure_class(): void {
+		$this->mock_attachment(1);
+
+		$img_tag = $this->build_img_tag(
+			'image', '', '',
+			'https://example.com/image.jpg', 'https://example.com/image.jpg 800w',
+			'auto, (max-width: 1200px) 100vw, 1200px',
+			'800', '600', true
+		);
+		$this->mock_passthrough_filter($img_tag, 1);
+
+		$this->expectOutputString($this->build_figure('image', $img_tag, '', 'cover'));
+
+		Image::render(1, null, null, null, null, true, 'cover');
+	}
+
+	public function test_empty_wrap_class_does_not_leave_a_trailing_space(): void {
+		$this->mock_attachment(1);
+
+		$img_tag = $this->build_img_tag(
+			'image', '', '',
+			'https://example.com/image.jpg', 'https://example.com/image.jpg 800w',
+			'auto, (max-width: 1200px) 100vw, 1200px',
+			'800', '600', true
+		);
+		$this->mock_passthrough_filter($img_tag, 1);
+
+		$this->expectOutputString($this->build_figure('image', $img_tag, '', ''));
+
+		Image::render(1, null, null, null, null, true, '');
 	}
 }
