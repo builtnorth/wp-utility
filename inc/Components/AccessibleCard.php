@@ -20,20 +20,16 @@ class AccessibleCard
 		$screen_reader = 'Read more about ...',
 		$class = null,
 	) {
+		$href_attr = $link ? ' href="' . esc_url( (string) $link ) . '"' : '';
+		$target_attr = $target ? ' target="' . esc_attr( (string) $target ) . '"' : '';
 
-		// Add target
-		if ($target) {
-			$target = 'target="' . $target . '"';
-		}
-
-		// Add class
-		if ($class) {
-			$class = $class . '__accessible-card-link ';
-		}
+		$class_prefix = $class
+			? esc_attr( (string) $class ) . '__accessible-card-link '
+			: '';
 
 		echo
-		'<a class="' . $class . 'accessible-card-link" href="' . $link . '"' . $target . '>' .
-			'<span class="screen-reader-only">' . $screen_reader . '</span>' .
+		'<a class="' . $class_prefix . 'accessible-card-link"' . $href_attr . $target_attr . '>' .
+			'<span class="screen-reader-only">' . esc_html( (string) $screen_reader ) . '</span>' .
 			'</a>';
 	}
 }

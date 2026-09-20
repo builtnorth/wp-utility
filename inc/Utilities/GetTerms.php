@@ -4,9 +4,9 @@
  * ------------------------------------------------------------------
  * Get Terms
  * ------------------------------------------------------------------
- * 
+ *
  * This class is used to get and render the terms for a post.
- * 
+ *
  * @package BuiltNorth\Utility
  * @since 1.0.0
  */
@@ -42,14 +42,16 @@ class GetTerms
 		$wrapper_tag = $first_term_only ? 'span' : 'ul';
 		$item_tag = $first_term_only ? 'span' : 'li';
 
-		$wrapper_class = $class ? "{$class}__terms" : 'query__terms';
-		echo "<{$wrapper_tag} class='{$wrapper_class}'>";
+		$wrapper_class = $class
+			? esc_attr( (string) $class ) . '__terms'
+			: 'query__terms';
+		echo '<' . $wrapper_tag . ' class="' . $wrapper_class . '">';
 
 		foreach ($terms_to_render as $term) {
 			self::renderTerm($term, $taxonomy_link, $class, $item_tag);
 		}
 
-		echo "</{$wrapper_tag}>";
+		echo '</' . $wrapper_tag . '>';
 	}
 
 	/**
@@ -57,14 +59,20 @@ class GetTerms
 	 */
 	protected static function renderTerm($term, $taxonomy_link, $class, $tag)
 	{
-		$name = $term->name;
-		$link = get_term_link($term->term_id);
-		$term_class = $class ? "{$class}__term" : 'query__term';
+		$name = esc_html( (string) $term->name );
+		$term_class = $class
+			? esc_attr( (string) $class ) . '__term'
+			: 'query__term';
 
-		$content = $taxonomy_link
-			? "<a class='{$term_class}-link is-interior-link' href='{$link}'>{$name}</a>"
-			: $name;
+		$content = $name;
 
-		echo "<{$tag} class='{$term_class}'>{$content}</{$tag}>";
+		if ($taxonomy_link) {
+			$link = get_term_link($term->term_id);
+			if (! is_wp_error($link)) {
+				$content = '<a class="' . $term_class . '-link is-interior-link" href="' . esc_url( $link ) . '">' . $name . '</a>';
+			}
+		}
+
+		echo '<' . $tag . ' class="' . $term_class . '">' . $content . '</' . $tag . '>';
 	}
 }

@@ -132,26 +132,31 @@ class BusinessHours
 			}
 
 			$year      = (int) wp_date('Y');
-			$date_from = "{$year}-{$raw_from}";
-			$date_to   = "{$year}-{$raw_to}";
+			$cross_year = strcmp($raw_to, $raw_from) < 0;
 
+			$date_from = "{$year}-{$raw_from}";
+			$date_to   = ( $cross_year ? ( $year + 1 ) : $year ) . "-{$raw_to}";
+
+			// If the whole range already ended this year, roll both ends forward.
 			if ((int) str_replace('-', '', $date_to) < $today) {
 				$year     += 1;
 				$date_from = "{$year}-{$raw_from}";
-				$date_to   = "{$year}-{$raw_to}";
+				$date_to   = ( $cross_year ? ( $year + 1 ) : $year ) . "-{$raw_to}";
 			}
 
 			$closed = ! empty($entry['closed']);
-			$opens  = $closed ? '00:00' : self::format_time_for_schema((string) ($entry['opens'] ?? '09:00'));
-			$closes = $closed ? '00:00' : self::format_time_for_schema((string) ($entry['closes'] ?? '17:00'));
 
 			$spec = [
 				'@type'        => 'OpeningHoursSpecification',
 				'validFrom'    => $date_from,
 				'validThrough' => $date_to,
-				'opens'        => $opens,
-				'closes'       => $closes,
 			];
+
+			// Closed specials omit opens/closes — midnight-midnight is ambiguous to schema consumers.
+			if (! $closed) {
+				$spec['opens']  = self::format_time_for_schema((string) ($entry['opens'] ?? '09:00'));
+				$spec['closes'] = self::format_time_for_schema((string) ($entry['closes'] ?? '17:00'));
+			}
 
 			$label = trim((string) ($entry['label'] ?? ''));
 			if ($label !== '') {

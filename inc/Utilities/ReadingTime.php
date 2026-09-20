@@ -28,8 +28,8 @@ class ReadingTime
 		 * @param int $words_per_minute Words per minute. Default 200.
 		 */
 		$words_per_minute = apply_filters('wp_utility_reading_time_wpm', 200);
-		
-		$readingtime = ceil($word_count / $words_per_minute);
+
+		$readingtime = (int) ceil($word_count / $words_per_minute);
 		return $readingtime;
 	}
 }

@@ -13,6 +13,14 @@ use WP_Mock;
  */
 class GetTermsTest extends WPMockTestCase {
 
+	public function setUp(): void {
+		parent::setUp();
+
+		WP_Mock::userFunction('esc_html')->andReturnUsing(static fn( $text ) => $text);
+		WP_Mock::userFunction('esc_attr')->andReturnUsing(static fn( $text ) => $text);
+		WP_Mock::userFunction('esc_url')->andReturnUsing(static fn( $url ) => $url);
+	}
+
 	private function make_term(int $id, string $name): object {
 		$term = new \stdClass();
 		$term->term_id = $id;
@@ -46,9 +54,9 @@ class GetTermsTest extends WPMockTestCase {
 		WP_Mock::userFunction('get_term_link')->andReturn('https://example.com/term/');
 
 		$this->expectOutputString(
-			"<ul class='query__terms'>" .
-			"<li class='query__term'>News</li>" .
-			"<li class='query__term'>Updates</li>" .
+			'<ul class="query__terms">' .
+			'<li class="query__term">News</li>' .
+			'<li class="query__term">Updates</li>' .
 			'</ul>'
 		);
 		GetTerms::render(1, 'category');
@@ -63,7 +71,7 @@ class GetTermsTest extends WPMockTestCase {
 		WP_Mock::userFunction('get_term_link')->andReturn('https://example.com/term/');
 
 		$this->expectOutputString(
-			"<span class='query__terms'><span class='query__term'>News</span></span>"
+			'<span class="query__terms"><span class="query__term">News</span></span>'
 		);
 		GetTerms::render(1, 'category', false, true);
 	}
@@ -78,9 +86,25 @@ class GetTermsTest extends WPMockTestCase {
 			->andReturn('https://example.com/news/');
 
 		$this->expectOutputString(
-			"<ul class='query__terms'>" .
-			"<li class='query__term'><a class='query__term-link is-interior-link' href='https://example.com/news/'>News</a></li>" .
+			'<ul class="query__terms">' .
+			'<li class="query__term"><a class="query__term-link is-interior-link" href="https://example.com/news/">News</a></li>' .
 			'</ul>'
+		);
+		GetTerms::render(1, 'category', true);
+	}
+
+	public function test_taxonomy_link_falls_back_to_plain_name_when_link_is_wp_error(): void {
+		WP_Mock::userFunction('get_the_terms')->andReturn([
+			$this->make_term(5, 'News'),
+		]);
+		WP_Mock::userFunction('get_term_link')
+			->with(5)
+			->andReturn(new \WP_Error('invalid', 'bad'));
+		WP_Mock::userFunction('is_wp_error')
+			->andReturnUsing(static fn( $value ) => $value instanceof \WP_Error);
+
+		$this->expectOutputString(
+			'<ul class="query__terms"><li class="query__term">News</li></ul>'
 		);
 		GetTerms::render(1, 'category', true);
 	}
@@ -93,7 +117,7 @@ class GetTermsTest extends WPMockTestCase {
 		WP_Mock::userFunction('get_term_link')->andReturn('https://example.com/term/');
 
 		$this->expectOutputString(
-			"<ul class='card__terms'><li class='card__term'>News</li></ul>"
+			'<ul class="card__terms"><li class="card__term">News</li></ul>'
 		);
 		GetTerms::render(1, 'category', false, false, 'card');
 	}

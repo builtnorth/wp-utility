@@ -103,4 +103,25 @@ class MetaGatedBlockSupportTest extends WPMockTestCase {
 
 		$this->assertSame($content, $output);
 	}
+
+	public function test_filter_render_block_fails_closed_when_post_id_is_missing(): void {
+		$instance = $this->createMock( \WP_Block::class );
+		$instance->context = [];
+
+		WP_Mock::userFunction('get_the_ID')->andReturn(0);
+
+		$output = MetaGatedBlockSupport::filter_render_block(
+			'<div class="wp-block-group">Email</div>',
+			[
+				'blockName' => 'core/group',
+				'attrs'     => [
+					'metaField'         => 'team_email',
+					'hideWhenMetaEmpty' => true,
+				],
+			],
+			$instance
+		);
+
+		$this->assertSame('', $output);
+	}
 }

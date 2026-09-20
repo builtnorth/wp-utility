@@ -22,7 +22,7 @@ class Pagination
 		}
 
 		$big = 999999999; // need an unlikely integer
-		$translated = __('Page', 'mytextdomain'); // Supply translatable string
+		$translated = __('Page', 'wp-utility');
 		$paged = (get_query_var('paged')) ? get_query_var('paged') : ((get_query_var('page')) ? get_query_var('page') : 1);
 
 		// Check if we're on a custom post type archive

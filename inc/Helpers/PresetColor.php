@@ -20,18 +20,20 @@ namespace BuiltNorth\WPUtility\Helpers;
 class PresetColor
 {
 	/**
+	 * Strict hex color pattern: #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.
+	 */
+	private const HEX_PATTERN = '/^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/';
+
+	/**
 	 * Resolve a color attribute to a CSS value.
 	 *
-	 * A hex value (leading `#`) is escaped and used as-is; anything else is
+	 * A leading `#` is treated as a hex color and accepted only when it matches
+	 * a strict hex pattern (rejects CSS breakout payloads). Anything else is
 	 * treated as a theme.json preset slug and wrapped in a `var()` custom
-	 * property reference. Both branches use sanitize_html_class() — a hex
-	 * value never reaches it (it's excluded by the `#` check), and a preset
-	 * slug is exactly the kind of value that function is for; esc_attr()
-	 * alone does not strip characters that are invalid in a CSS custom
-	 * property name.
+	 * property reference via sanitize_html_class().
 	 *
 	 * @param string $value Attribute value, e.g. '#ff0000' or 'primary'.
-	 * @return string CSS value, e.g. '#ff0000' or 'var( --wp--preset--color--primary )'. Empty string when $value is empty.
+	 * @return string CSS value, e.g. '#ff0000' or 'var( --wp--preset--color--primary )'. Empty string when $value is empty or an invalid hex.
 	 */
 	public static function css_value(string $value): string
 	{
@@ -40,7 +42,9 @@ class PresetColor
 		}
 
 		if (str_starts_with($value, '#')) {
-			return esc_attr($value);
+			return preg_match(self::HEX_PATTERN, $value) === 1
+				? esc_attr($value)
+				: '';
 		}
 
 		return 'var( --wp--preset--color--' . sanitize_html_class($value) . ' )';
@@ -51,13 +55,18 @@ class PresetColor
 	 *
 	 * @param string $property CSS custom property name, without the leading `--`.
 	 * @param string $value    Attribute value, e.g. '#ff0000' or 'primary'.
-	 * @return string The declaration, or an empty string when $value is empty.
+	 * @return string The declaration, or an empty string when $value is empty/invalid.
 	 */
 	public static function css_declaration(string $property, string $value): string
 	{
 		$css_value = self::css_value($value);
+		$property  = sanitize_html_class($property);
 
-		return $css_value !== '' ? "--{$property}: {$css_value};" : '';
+		if ($css_value === '' || $property === '') {
+			return '';
+		}
+
+		return "--{$property}: {$css_value};";
 	}
 
 	/**
@@ -73,6 +82,11 @@ class PresetColor
 	public static function preset_class(string $value, string $suffix): string
 	{
 		if ($value === '' || str_starts_with($value, '#')) {
+			return '';
+		}
+
+		$suffix = sanitize_html_class($suffix);
+		if ($suffix === '') {
 			return '';
 		}
 

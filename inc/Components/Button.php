@@ -14,6 +14,35 @@ namespace BuiltNorth\WPUtility\Components;
 
 class Button
 {
+	/**
+	 * Allowed tag names for $button_type.
+	 *
+	 * @var string[]
+	 */
+	private const ALLOWED_BUTTON_TYPES = [ 'a', 'button', 'span' ];
+
+	/**
+	 * Render a button or link element.
+	 *
+	 * Structural attributes (href, target, classes, style/size/appearance, tag)
+	 * are escaped here. `$text`, `$icon`, and `$attributes` are intentional HTML
+	 * slots — callers must sanitize them (e.g. wp_kses_post, EscapeSvg,
+	 * get_block_wrapper_attributes).
+	 *
+	 * @param string      $button_type   Tag name: a|button|span. Default 'a'.
+	 * @param string|null $class         Optional BEM class prefix.
+	 * @param string|null $extra_class   Extra class names (caller-sanitized).
+	 * @param string      $style         Style slug (sanitized to HTML class).
+	 * @param string      $size          Size slug (sanitized to HTML class).
+	 * @param string      $appearance    Appearance slug (sanitized to HTML class).
+	 * @param string      $text          Visible label HTML (caller-sanitized).
+	 * @param string|null $link          Href when rendering an anchor.
+	 * @param string|null $target        Target attribute value.
+	 * @param string|null $screen_reader Screen-reader-only text (escaped here).
+	 * @param string|null $attributes    Raw attribute string (caller-sanitized).
+	 * @param string|null $icon          Icon HTML (caller-sanitized).
+	 * @param string      $icon_position Icon position: left|right.
+	 */
 	public static function render(
 		$button_type = 'a',
 		$class = null,
@@ -29,6 +58,16 @@ class Button
 		$icon = null,
 		$icon_position = 'left'
 	) {
+		$button_type = in_array( (string) $button_type, self::ALLOWED_BUTTON_TYPES, true )
+			? (string) $button_type
+			: 'a';
+
+		$style      = sanitize_html_class( (string) $style );
+		$size       = sanitize_html_class( (string) $size );
+		$appearance = sanitize_html_class( (string) $appearance );
+		$extra_class = $extra_class !== null && $extra_class !== ''
+			? esc_attr( (string) $extra_class )
+			: '';
 
 		// Add screen reader text
 		if ($screen_reader) {
@@ -36,48 +75,42 @@ class Button
 		}
 
 		// Add target
-		if ($target) {
-			$target = 'target="' . $target . '"';
-		}
+		$target_attr = $target
+			? ' target="' . esc_attr( (string) $target ) . '"'
+			: '';
 
 		// Add class
 		if ($class) {
-			$wrapper_class = $class . '__button ';
-			$link_class = $class . '__button-link ';
+			$class_safe     = esc_attr( (string) $class );
+			$wrapper_class  = $class_safe . '__button ';
+			$link_class     = $class_safe . '__button-link ';
 		} else {
-			$wrapper_class = null;
-			$link_class = null;
+			$wrapper_class = '';
+			$link_class    = '';
 		}
 
-		if ($link) {
-			$link = 'href="' . $link . '"';
-		}
-		else {
-			$link = null;
-		}
+		$link_attr = $link
+			? ' href="' . esc_url( (string) $link ) . '"'
+			: '';
 
-		// Add attributes
-		if ($attributes) {
-			$attributes = ' ' . $attributes;
-		}
-
-		$target = $target ? ' ' . $target : '';
-		$attributes = $attributes ? ' ' . $attributes : '';
+		// Raw attribute slot — caller must sanitize (e.g. get_block_wrapper_attributes).
+		$attributes_attr = $attributes ? ' ' . $attributes : '';
 
 		/**
 		 * Filter the button block class prefix.
-		 * 
+		 *
 		 * @param string $prefix The button class prefix. Default 'wp-block-polaris-button'.
 		 */
 		$block_prefix = apply_filters('wp_utility_button_block_prefix', 'wp-block-polaris-button');
+		$block_prefix = esc_attr( (string) $block_prefix );
 
-		// Prepare icon HTML
+		// Prepare icon HTML ($icon is an intentional HTML slot).
 		$icon_left_html = '';
 		$icon_right_html = '';
 		if ($icon) {
-			$icon_class = $block_prefix . '__icon ' . $block_prefix . '__icon--' . esc_attr($icon_position);
+			$icon_class = $block_prefix . '__icon ' . $block_prefix . '__icon--' . esc_attr( (string) $icon_position );
 			$icon_html = '<span class="' . $icon_class . '">' . $icon . '</span>';
-			
+
 			if ($icon_position === 'right') {
 				$icon_right_html = $icon_html;
 			} else {
@@ -85,15 +118,24 @@ class Button
 			}
 		}
 
-		// For button elements, don't wrap text in span to avoid click event issues
+		$class_attr = trim(
+			$wrapper_class . $block_prefix .
+			' is-style-' . $style .
+			' is-size-' . $size .
+			' is-appearance-' . $appearance .
+			( $extra_class !== '' ? ' ' . $extra_class : '' )
+		);
+
+		// For button elements, don't wrap text in span to avoid click event issues.
+		// $text is an intentional HTML slot (caller-sanitized).
 		if ($button_type === 'button') {
-			$button = '<' . $button_type . ' class="' . $wrapper_class . $block_prefix . ' is-style-' . $style . ' is-size-' . $size . ' is-appearance-' . $appearance . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
+			$button = '<' . $button_type . ' class="' . $class_attr . '"' . $link_attr . $target_attr . $attributes_attr . '>' .
 				$icon_left_html .
 				$text . $screen_reader .
 				$icon_right_html .
 				'</' . $button_type . '>';
 		} else {
-			$button = '<' . $button_type . ' class="' . $wrapper_class . $block_prefix . ' is-style-' . $style . ' is-size-' . $size . ' is-appearance-' . $appearance . ' ' . $extra_class . '"' . $link . $target . $attributes . '>' .
+			$button = '<' . $button_type . ' class="' . $class_attr . '"' . $link_attr . $target_attr . $attributes_attr . '>' .
 				$icon_left_html .
 				'<span class="' . $link_class . $block_prefix . '__text">' . $text . '</span>' .
 				$screen_reader .

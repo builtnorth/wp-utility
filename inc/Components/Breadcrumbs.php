@@ -67,6 +67,7 @@ class Breadcrumbs
 	{
 		$list_class = esc_attr(self::$class . '__list');
 
+		// $nav_attributes is an intentional HTML attribute slot (e.g. get_block_wrapper_attributes()).
 		if (self::$nav_attributes !== '') {
 			$html = '<nav ' . self::$nav_attributes . '><ol class="' . $list_class . '">';
 		} else {
@@ -362,7 +363,7 @@ class Breadcrumbs
 	 */
 	private static function blog_home_breadcrumbs()
 	{
-		return '<li>' . get_the_title(get_option('page_for_posts')) . '</li>';
+		return '<li>' . esc_html( (string) get_the_title( get_option( 'page_for_posts' ) ) ) . '</li>';
 	}
 
 	/**
@@ -748,7 +749,7 @@ class Breadcrumbs
 			if ($additional_class) {
 				$link_class .= ' ' . self::$class . '__link--' . $additional_class;
 			}
-			$html .= '<a class="' . $link_class . '" href="' . esc_url($url) . '" title="' . esc_attr($text) . '">' . $text . '</a>';
+			$html .= '<a class="' . esc_attr( $link_class ) . '" href="' . esc_url( $url ) . '" title="' . esc_attr( $text ) . '">' . esc_html( $text ) . '</a>';
 		}
 
 		$html .= '</li>';
@@ -778,11 +779,12 @@ class Breadcrumbs
 	 */
 	private static function separator()
 	{
-		$html = '<li class="' . self::$class . '__separator"> ' . self::$separator . ' </li>';
-		
+		// $separator is an intentional HTML slot (callers pass markup such as a span).
+		$html = '<li class="' . esc_attr( self::$class . '__separator' ) . '"> ' . self::$separator . ' </li>';
+
 		/**
 		 * Filter the breadcrumb separator HTML.
-		 * 
+		 *
 		 * @param string $html The separator HTML.
 		 * @param string $separator The separator text/symbol.
 		 */

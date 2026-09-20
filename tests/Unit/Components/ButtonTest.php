@@ -30,6 +30,11 @@ class ButtonTest extends WPMockTestCase {
 		WP_Mock::onFilter('wp_utility_button_block_prefix')
 			->with('wp-block-polaris-button')
 			->reply('wp-block-polaris-button');
+
+		WP_Mock::userFunction('sanitize_html_class')->andReturnUsing(static fn( $text ) => $text);
+		WP_Mock::userFunction('esc_attr')->andReturnUsing(static fn( $text ) => $text);
+		WP_Mock::userFunction('esc_url')->andReturnUsing(static fn( $url ) => $url);
+		WP_Mock::userFunction('esc_html')->andReturnUsing(static fn( $text ) => $text);
 	}
 
 	/**
@@ -52,7 +57,7 @@ class ButtonTest extends WPMockTestCase {
 
 	public function test_renders_an_anchor_by_default(): void {
 		$this->expectOutputString(
-			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill ">' .
+			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill">' .
 			'<span class="wp-block-polaris-button__text">Button Text</span></a>'
 		);
 
@@ -61,7 +66,7 @@ class ButtonTest extends WPMockTestCase {
 
 	public function test_button_type_does_not_wrap_text_in_a_span(): void {
 		$this->expectOutputString(
-			'<button class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill ">' .
+			'<button class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill">' .
 			'Click Me</button>'
 		);
 
@@ -69,23 +74,17 @@ class ButtonTest extends WPMockTestCase {
 	}
 
 	public function test_link_is_rendered_as_href(): void {
-		WP_Mock::userFunction('esc_attr')->andReturnUsing(static fn($text) => $text);
-
 		$this->expectOutputString(
-			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill "' .
-			'href="https://example.com/"><span class="wp-block-polaris-button__text">Button Text</span></a>'
+			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill"' .
+			' href="https://example.com/"><span class="wp-block-polaris-button__text">Button Text</span></a>'
 		);
 
 		Button::render('a', null, null, 'default', 'default', 'fill', 'Button Text', 'https://example.com/');
 	}
 
 	public function test_screen_reader_text_is_escaped_and_appended(): void {
-		WP_Mock::userFunction('esc_html')
-			->with('opens in new window')
-			->andReturn('opens in new window');
-
 		$this->expectOutputString(
-			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill ">' .
+			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill">' .
 			'<span class="wp-block-polaris-button__text">Button Text</span>' .
 			'<span class="screen-reader-only">opens in new window</span></a>'
 		);
@@ -100,10 +99,8 @@ class ButtonTest extends WPMockTestCase {
 	}
 
 	public function test_icon_left_is_placed_before_the_text_by_default(): void {
-		WP_Mock::userFunction('esc_attr')->andReturnUsing(static fn($text) => $text);
-
 		$this->expectOutputString(
-			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill ">' .
+			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill">' .
 			'<span class="wp-block-polaris-button__icon wp-block-polaris-button__icon--left"><svg></svg></span>' .
 			'<span class="wp-block-polaris-button__text">Button Text</span></a>'
 		);
@@ -112,15 +109,22 @@ class ButtonTest extends WPMockTestCase {
 	}
 
 	public function test_icon_right_is_placed_after_the_text(): void {
-		WP_Mock::userFunction('esc_attr')->andReturnUsing(static fn($text) => $text);
-
 		$this->expectOutputString(
-			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill ">' .
+			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill">' .
 			'<span class="wp-block-polaris-button__text">Button Text</span>' .
 			'<span class="wp-block-polaris-button__icon wp-block-polaris-button__icon--right"><svg></svg></span></a>'
 		);
 
 		Button::render('a', null, null, 'default', 'default', 'fill', 'Button Text', null, null, null, null, '<svg></svg>', 'right');
+	}
+
+	public function test_disallowed_button_type_falls_back_to_anchor(): void {
+		$this->expectOutputString(
+			'<a class="wp-block-polaris-button is-style-default is-size-default is-appearance-fill">' .
+			'<span class="wp-block-polaris-button__text">Button Text</span></a>'
+		);
+
+		Button::render('script', null, null, 'default', 'default', 'fill', 'Button Text');
 	}
 
 	// -- resolve_screen_reader_text() ------------------------------------

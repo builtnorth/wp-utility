@@ -6,11 +6,20 @@ namespace BuiltNorth\WPUtility\Tests\Unit\Components;
 
 use BuiltNorth\WPUtility\Components\AccessibleCard;
 use BuiltNorth\WPUtility\Tests\WPMockTestCase;
+use WP_Mock;
 
 /**
  * @covers \BuiltNorth\WPUtility\Components\AccessibleCard
  */
 class AccessibleCardTest extends WPMockTestCase {
+
+	public function setUp(): void {
+		parent::setUp();
+
+		WP_Mock::userFunction('esc_url')->andReturnUsing(static fn( $url ) => $url);
+		WP_Mock::userFunction('esc_attr')->andReturnUsing(static fn( $text ) => $text);
+		WP_Mock::userFunction('esc_html')->andReturnUsing(static fn( $text ) => $text);
+	}
 
 	public function test_renders_a_link_with_default_screen_reader_text(): void {
 		$this->expectOutputString(
@@ -21,9 +30,9 @@ class AccessibleCardTest extends WPMockTestCase {
 		AccessibleCard::render('https://example.com/post/');
 	}
 
-	public function test_target_is_added_as_an_attribute(): void {
+	public function test_target_is_added_as_an_attribute_with_leading_space(): void {
 		$this->expectOutputString(
-			'<a class="accessible-card-link" href="https://example.com/post/"target="_blank">' .
+			'<a class="accessible-card-link" href="https://example.com/post/" target="_blank">' .
 			'<span class="screen-reader-only">Read more about ...</span></a>'
 		);
 

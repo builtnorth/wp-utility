@@ -12,105 +12,57 @@ use BuiltNorth\WPUtility\Tests\WPMockTestCase;
 use WP_Mock;
 
 /**
- * ReadingTime test case
+ * @covers \BuiltNorth\WPUtility\Utilities\ReadingTime
  */
 class ReadingTimeTest extends WPMockTestCase {
 
 	/**
-	 * Test calculate reading time for short text
+	 * @param string $content Post content returned by get_the_content().
+	 * @param int    $wpm     Words-per-minute filter reply.
 	 */
-	public function test_calculate_reading_time_short_text() {
-		// Mock wp_strip_all_tags function
-		WP_Mock::userFunction( 'wp_strip_all_tags' )
-			->andReturnUsing( function( $text ) {
-				return strip_tags( $text );
-			});
-
-		// 100 words should take less than a minute
-		$text = str_repeat( 'word ', 100 );
-		
-		// Assuming average reading speed of 200-250 words per minute
-		// 100 words should return 1 minute
-		$this->assertIsInt( 1 );
+	private function mock_content( string $content, int $wpm = 200 ): void {
+		WP_Mock::userFunction( 'get_the_content' )->andReturn( $content );
+		WP_Mock::onFilter( 'wp_utility_reading_time_wpm' )
+			->with( 200 )
+			->reply( $wpm );
 	}
 
-	/**
-	 * Test calculate reading time for medium text
-	 */
-	public function test_calculate_reading_time_medium_text() {
-		// Mock wp_strip_all_tags function
-		WP_Mock::userFunction( 'wp_strip_all_tags' )
-			->andReturnUsing( function( $text ) {
-				return strip_tags( $text );
-			});
+	public function test_short_text_rounds_up_to_one_minute(): void {
+		$this->mock_content( str_repeat( 'word ', 100 ) );
 
-		// 500 words should take about 2-3 minutes
-		$text = str_repeat( 'word ', 500 );
-		
-		// This is a placeholder assertion
-		$this->assertIsInt( 2 );
+		$this->assertSame( 1, ReadingTime::render() );
 	}
 
-	/**
-	 * Test calculate reading time for long text
-	 */
-	public function test_calculate_reading_time_long_text() {
-		// Mock wp_strip_all_tags function
-		WP_Mock::userFunction( 'wp_strip_all_tags' )
-			->andReturnUsing( function( $text ) {
-				return strip_tags( $text );
-			});
+	public function test_medium_text_rounds_up_to_three_minutes_at_default_wpm(): void {
+		// 500 words / 200 wpm = 2.5 → ceil 3
+		$this->mock_content( str_repeat( 'word ', 500 ) );
 
-		// 2000 words should take about 8-10 minutes
-		$text = str_repeat( 'word ', 2000 );
-		
-		// This is a placeholder assertion
-		$this->assertIsInt( 10 );
+		$this->assertSame( 3, ReadingTime::render() );
 	}
 
-	/**
-	 * Test calculate reading time with HTML content
-	 */
-	public function test_calculate_reading_time_with_html() {
-		// Mock wp_strip_all_tags function
-		WP_Mock::userFunction( 'wp_strip_all_tags' )
-			->with( \Mockery::type( 'string' ) )
-			->andReturnUsing( function( $text ) {
-				return strip_tags( $text );
-			});
+	public function test_long_text_calculates_ten_minutes(): void {
+		// 2000 words / 200 wpm = 10
+		$this->mock_content( str_repeat( 'word ', 2000 ) );
 
-		$html_content = '<p>This is <strong>some</strong> text with <a href="#">HTML</a> tags.</p>';
-		
-		// Should strip tags and calculate based on plain text
-		$this->assertIsString( $html_content );
+		$this->assertSame( 10, ReadingTime::render() );
 	}
 
-	/**
-	 * Test calculate reading time with empty content
-	 */
-	public function test_calculate_reading_time_empty_content() {
-		// Mock wp_strip_all_tags function
-		WP_Mock::userFunction( 'wp_strip_all_tags' )
-			->with( '' )
-			->andReturn( '' );
+	public function test_html_tags_are_stripped_before_counting(): void {
+		$this->mock_content( '<p>one two three four five</p>' );
 
-		// Empty content should return 1 minute minimum
-		$this->assertIsInt( 1 );
+		$this->assertSame( 1, ReadingTime::render() );
 	}
 
-	/**
-	 * Test calculate reading time with special characters
-	 */
-	public function test_calculate_reading_time_special_characters() {
-		// Mock wp_strip_all_tags function
-		WP_Mock::userFunction( 'wp_strip_all_tags' )
-			->andReturnUsing( function( $text ) {
-				return strip_tags( $text );
-			});
+	public function test_empty_content_returns_zero(): void {
+		$this->mock_content( '' );
 
-		$text = 'This text has special characters: !@#$%^&*() and émojis 😀';
-		
-		// Should handle special characters properly
-		$this->assertIsString( $text );
+		$this->assertSame( 0, ReadingTime::render() );
+	}
+
+	public function test_custom_wpm_filter_affects_the_result(): void {
+		// 200 words / 100 wpm = 2
+		$this->mock_content( str_repeat( 'word ', 200 ), 100 );
+
+		$this->assertSame( 2, ReadingTime::render() );
 	}
 }

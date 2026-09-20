@@ -159,7 +159,7 @@ class BusinessHoursTest extends WPMockTestCase {
 		$this->assertSame('2027-01-02', $result[0]['validThrough']);
 	}
 
-	public function test_special_schema_closed_entry_uses_midnight_for_both_times(): void {
+	public function test_special_schema_closed_entry_omits_opens_and_closes(): void {
 		WP_Mock::userFunction('wp_date')
 			->with('Ymd')
 			->andReturn('20260101');
@@ -171,8 +171,24 @@ class BusinessHoursTest extends WPMockTestCase {
 			['date_from' => '12-25', 'date_to' => '12-25', 'closed' => true],
 		]);
 
-		$this->assertSame('00:00', $result[0]['opens']);
-		$this->assertSame('00:00', $result[0]['closes']);
+		$this->assertArrayNotHasKey('opens', $result[0]);
+		$this->assertArrayNotHasKey('closes', $result[0]);
+	}
+
+	public function test_special_schema_cross_year_range_extends_valid_through(): void {
+		WP_Mock::userFunction('wp_date')
+			->with('Ymd')
+			->andReturn('20260601');
+		WP_Mock::userFunction('wp_date')
+			->with('Y')
+			->andReturn('2026');
+
+		$result = BusinessHours::special_schema([
+			['date_from' => '12-20', 'date_to' => '01-05', 'opens' => '10:00', 'closes' => '14:00'],
+		]);
+
+		$this->assertSame('2026-12-20', $result[0]['validFrom']);
+		$this->assertSame('2027-01-05', $result[0]['validThrough']);
 	}
 
 	public function test_special_schema_defaults_open_hours_when_not_closed_and_no_times_given(): void {

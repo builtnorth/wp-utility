@@ -109,8 +109,9 @@ class MetaGatedBlockSupport
 
 		$post_id = MetaGatedRender::resolve_post_id($instance);
 
+		// Fail closed: without a post context we cannot evaluate the meta gate.
 		if ($post_id <= 0) {
-			return $block_content;
+			return '';
 		}
 
 		if (! MetaGatedRender::should_render($attributes, $post_id)) {
