@@ -98,8 +98,8 @@ class App
 					$instance->init();
 				}
 			} else {
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-					error_log( "Class $full_class_name not found." );
+				if ( function_exists( 'wp_trigger_error' ) ) {
+					wp_trigger_error( __METHOD__, "Class $full_class_name not found.", E_USER_WARNING );
 				}
 			}
 		}
