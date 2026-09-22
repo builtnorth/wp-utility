@@ -15,10 +15,10 @@
   },
   "autoload": {
     "files": [
-      "bootstrap/register.php"
+      "register.php"
     ],
     "psr-4": {
-      "BuiltNorth\\WPUtility\\": "inc/"
+      "BuiltNorth\\WPUtility\\": "inc/classes/"
     }
   },
   "autoload-dev": {
