@@ -72,13 +72,6 @@ class UtilityTest extends WPMockTestCase {
 	}
 
 	/**
-	 * Test lazy load first block utility exists
-	 */
-	public function test_lazy_load_first_block_utility_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Utilities\\LazyLoadFirstBlock' ) );
-	}
-
-	/**
 	 * Test reading time utility exists
 	 */
 	public function test_reading_time_utility_exists() {

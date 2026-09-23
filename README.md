@@ -196,22 +196,6 @@ Retrieves appropriate page title across different WordPress contexts:
 $title = Utility::getTitle();
 ```
 
-### LazyLoadFirstBlock
-
-Controls lazy loading behavior for blocks:
-
-```php
-$should_lazy = Utility::lazyLoadFirstBlock(
-    block: $block,
-    non_lazy_parents: ['core/columns', 'core/group'],
-    default_lazy: true
-);
-```
-
-**Filter:**
-
-- `wp_utility_lazy_load_non_lazy_parents` - Modify non-lazy parent blocks
-
 ### ReadingTime
 
 Calculates estimated reading time:

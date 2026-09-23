@@ -76,17 +76,6 @@ class Utility
 	}
 
 	/**
-	 * Lazy load first block utility.
-	 *
-	 * @param mixed ...$args Arguments to pass to the utility.
-	 * @return mixed The utility result.
-	 */
-	public static function lazyLoadFirstBlock(...$args)
-	{
-		return LazyLoadFirstBlock::render(...$args);
-	}
-
-	/**
 	 * Reading time utility.
 	 *
 	 * @param mixed ...$args Arguments to pass to the utility.
