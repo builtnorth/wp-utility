@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace BuiltNorth\WPUtility\Tests\Unit;
 
-use BuiltNorth\WPUtility\App;
+use BuiltNorth\WPUtility\Kit;
 use BuiltNorth\WPUtility\Tests\WPMockTestCase;
 
 /**
- * @covers \BuiltNorth\WPUtility\App
+ * @covers \BuiltNorth\WPUtility\Kit
  */
-class AppTest extends WPMockTestCase {
+class KitTest extends WPMockTestCase {
 
 	public function test_instance_always_returns_the_same_object(): void {
-		$this->assertSame(App::instance(), App::instance());
+		$this->assertSame(Kit::instance(), Kit::instance());
 	}
 
 	/**
@@ -37,7 +37,7 @@ class AppTest extends WPMockTestCase {
 			3
 		);
 
-		App::instance()->boot();
+		Kit::instance()->boot();
 
 		$this->assertConditionsMet();
 	}

@@ -1,15 +1,9 @@
 <?php
 
 /**
- * ------------------------------------------------------------------
- * Class: App
- * ------------------------------------------------------------------
+ * Package entry point.
  *
- * This class is responsible for loading and initializing classes.
- *
- * @package BuiltStarter
- * @since BuiltStarter 1.0.0
- * 
+ * @package WPUtility
  **/
 
 namespace BuiltNorth\WPUtility;
@@ -23,15 +17,27 @@ if (!defined('WPINC')) {
 }
 
 /**
- * Class App
+ * Kit: single entry point for the package.
+ *
+ * Named for what it is rather than for its role. `App` is the name every
+ * consuming plugin and theme uses for its own root class, so importing this
+ * package's entry point forced an alias at the call site — Polaris core's
+ * `Dependencies` carried `use BuiltNorth\WPUtility\App as Utility;`,
+ * aliasing it alongside two other packages' `App` classes, all three in the
+ * same file.
+ *
+ * `Kit` rather than `Utility`: this namespace already has a
+ * {@see Utility} class (a back-compat stub over {@see Utilities\Utility})
+ * which consuming block render files import directly, so that name was not
+ * available. `Kit` names the loader that boots the `Utility`, `Component` and
+ * `Helper` facades.
  */
-
-class App
+class Kit
 {
 	/**
 	 * Holds the single instance of this class.
 	 *
-	 * @var App|null
+	 * @var Kit|null
 	 */
 	protected static $instance = null;
 
@@ -49,7 +55,7 @@ class App
 	/**
 	 * Get the single instance of this class.
 	 *
-	 * @return App
+	 * @return Kit
 	 */
 	public static function instance()
 	{

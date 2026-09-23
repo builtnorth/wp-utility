@@ -20,8 +20,8 @@ composer require builtnorth/wp-utility
 In your plugin or theme, initialize WP Utility:
 
 ```php
-if (class_exists('BuiltNorth\WPUtility\App')) {
-    $utility = BuiltNorth\WPUtility\App::instance();
+if (class_exists('BuiltNorth\WPUtility\Kit')) {
+    $utility = BuiltNorth\WPUtility\Kit::instance();
     $utility->boot();
 }
 ```
