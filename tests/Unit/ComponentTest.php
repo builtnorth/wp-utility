@@ -1,74 +1,57 @@
 <?php
 /**
- * Tests for the Component class
+ * Tests for the Component facade
  *
  * @package BuiltNorth\WPUtility\Tests\Unit
  */
 
 namespace BuiltNorth\WPUtility\Tests\Unit;
 
-use BuiltNorth\WPUtility\Component;
+use BuiltNorth\WPUtility\Facade\Component;
 use BuiltNorth\WPUtility\Tests\WPMockTestCase;
-use WP_Mock;
 
 /**
- * Component test case
+ * Component facade test case
+ *
+ * @covers \BuiltNorth\WPUtility\Facade\Component
  */
 class ComponentTest extends WPMockTestCase {
 
 	/**
-	 * Test that Component uses static methods
+	 * Every component a consumer needs is reachable from this one import.
 	 */
-	public function test_component_uses_static_methods() {
-		$this->assertTrue( class_exists( Component::class ) );
-		
-		// Component uses __callStatic for rendering
-		$this->assertTrue( method_exists( Component::class, '__callStatic' ) );
+	public function test_facade_exposes_the_full_component_surface() {
+		foreach ( [
+			'accessible_card',
+			'breadcrumbs',
+			'button',
+			'resolve_screen_reader_text',
+			'image',
+			'sizes',
+			'pagination',
+		] as $method ) {
+			$this->assertTrue(
+				method_exists( Component::class, $method ),
+				"Component::{$method}() is missing from the facade"
+			);
+		}
 	}
 
 	/**
-	 * Test that Component throws exception for non-existent component
+	 * __callStatic was removed; a missing method is a fatal, not a swallowed call.
 	 */
-	public function test_component_throws_exception_for_nonexistent() {
-		$this->expectException( \BadMethodCallException::class );
-		$this->expectExceptionMessage( 'Component method nonexistent does not exist.' );
-		
-		Component::nonexistent();
+	public function test_facade_does_not_define_call_static() {
+		$this->assertFalse( method_exists( Component::class, '__callStatic' ) );
 	}
 
 	/**
-	 * Test accessible card component exists
+	 * sizes() delegates to Image and keeps its typed signature.
 	 */
-	public function test_accessible_card_component_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Components\\AccessibleCard' ) );
-	}
+	public function test_sizes_delegates_to_image() {
+		\WP_Mock::userFunction( 'wp_get_global_settings', [
+			'return' => [ 'layout' => [ 'contentSize' => '800px' ] ],
+		] );
 
-	/**
-	 * Test breadcrumbs component exists
-	 */
-	public function test_breadcrumbs_component_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Components\\Breadcrumbs' ) );
+		$this->assertSame( '100vw', Component::sizes( 100 ) );
 	}
-
-	/**
-	 * Test button component exists
-	 */
-	public function test_button_component_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Components\\Button' ) );
-	}
-
-	/**
-	 * Test image component exists
-	 */
-	public function test_image_component_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Components\\Image' ) );
-	}
-
-	/**
-	 * Test pagination component exists
-	 */
-	public function test_pagination_component_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Components\\Pagination' ) );
-	}
-
 }

@@ -42,17 +42,6 @@ class Kit
 	protected static $instance = null;
 
 	/**
-	 * List of helper classes to be loaded.
-	 *
-	 * @var array
-	 */
-	protected $classes = [
-		'Utility',
-		'Component',
-		'Helper',
-	];
-
-	/**
 	 * Get the single instance of this class.
 	 *
 	 * @return Kit
@@ -75,39 +64,16 @@ class Kit
 
 	/**
 	 * Boot the utility package.
-	 * This method should be called after getting the instance.
+	 *
+	 * Only registers what actually needs a hook. The facades under `Facade\`
+	 * and every leaf class are stateless and static, so there is nothing to
+	 * instantiate at boot: the predecessor of this method built three facade
+	 * instances and looked for an `init()` none of them declared.
 	 */
 	public function boot()
 	{
-		$this->load_classes();
-
 		if (class_exists(Blocks\MetaGatedBlockSupport::class)) {
 			Blocks\MetaGatedBlockSupport::init();
-		}
-	}
-
-	/**
-	 * Load and initialize all classes.
-	 */
-	protected function load_classes()
-	{
-		foreach ($this->classes as $class) {
-			$full_class_name = __NAMESPACE__ . '\\' . $class;
-
-			// Check if the class exists
-			if (class_exists($full_class_name)) {
-				// Instantiate the class
-				$instance = new $full_class_name();
-
-				// If the class has an init method, call it
-				if (method_exists($instance, 'init')) {
-					$instance->init();
-				}
-			} else {
-				if ( function_exists( 'wp_trigger_error' ) ) {
-					wp_trigger_error( __METHOD__, "Class $full_class_name not found.", E_USER_WARNING );
-				}
-			}
 		}
 	}
 }

@@ -35,9 +35,9 @@ Components provide reusable UI elements with consistent APIs.
 Creates accessible card components with proper ARIA attributes:
 
 ```php
-use BuiltNorth\WPUtility\Components\Component;
+use BuiltNorth\WPUtility\Facade\Component;
 
-Component::accessibleCard(
+Component::accessible_card(
     url: 'https://example.com',
     title: 'Card Title',
     new_tab: true,
@@ -160,9 +160,9 @@ Utilities provide data processing and retrieval functions.
 Handles conversion of pretty permalinks to query string URLs for archive pages:
 
 ```php
-use BuiltNorth\WPUtility\Utilities\Utility;
+use BuiltNorth\WPUtility\Facade\Utility;
 
-Utility::archiveUrl();
+Utility::archive_url();
 ```
 
 ### CountryList
@@ -170,7 +170,7 @@ Utility::archiveUrl();
 Returns an array of countries with ISO codes:
 
 ```php
-$countries = Utility::countryList();
+$countries = Utility::country_list();
 // Returns: ['US' => 'United States', 'CA' => 'Canada', ...]
 ```
 
@@ -179,7 +179,7 @@ $countries = Utility::countryList();
 Renders terms for a post:
 
 ```php
-Utility::getTerms(
+Utility::get_terms(
     post_id: get_the_ID(),
     taxonomy: 'category',
     taxonomy_link: true,
@@ -193,7 +193,7 @@ Utility::getTerms(
 Retrieves appropriate page title across different WordPress contexts:
 
 ```php
-$title = Utility::getTitle();
+$title = Utility::get_title();
 ```
 
 ### ReadingTime
@@ -201,7 +201,7 @@ $title = Utility::getTitle();
 Calculates estimated reading time:
 
 ```php
-$minutes = Utility::readingTime();
+$minutes = Utility::reading_time();
 ```
 
 **Filter:**
@@ -213,7 +213,7 @@ $minutes = Utility::readingTime();
 Returns an array of US states:
 
 ```php
-$states = Utility::stateList();
+$states = Utility::state_list();
 // Returns: ['AL' => 'Alabama', 'AK' => 'Alaska', ...]
 ```
 
@@ -226,9 +226,9 @@ Helpers provide utility functions for common tasks.
 Safely escapes SVG content for output:
 
 ```php
-use BuiltNorth\WPUtility\Helpers\Helper;
+use BuiltNorth\WPUtility\Facade\Helper;
 
-$safe_svg = Helper::escapeSvg($svg_content);
+$safe_svg = Helper::escape_svg($svg_content);
 ```
 
 ## Setup
@@ -288,33 +288,43 @@ add_filter('wp_utility_image_size_names', function($names) {
 
 ## Method Naming Conventions
 
-All components, utilities, and helpers support multiple naming conventions:
+Facade methods are camelCase:
 
 ```php
-// camelCase
-Component::accessibleCard();
-Utility::getTitle();
-Helper::escapeSvg();
-
-// PascalCase (PHP is case-insensitive for methods)
-Component::AccessibleCard();
-Utility::GetTitle();
-Helper::EscapeSvg();
-
-// snake_case (via magic methods)
 Component::accessible_card();
 Utility::get_title();
 Helper::escape_svg();
 ```
 
-## Backward Compatibility
+PHP method names are case-insensitive, so `Component::AccessibleCard()` resolves
+to the same method. snake_case names such as `Component::accessible_card()` are
+**not** supported — they relied on a `__callStatic` shim that has been removed.
 
-The library maintains backward compatibility through class aliases:
+Leaf classes keep their own snake_case method names
+(`PresetColor::css_declaration()`); the facade exposes them under camelCase
+equivalents (`Helper::css_declaration()`).
 
-- `BuiltNorth\WPUtility\Component` → `BuiltNorth\WPUtility\Components\Component`
-- `BuiltNorth\WPUtility\Utility` → `BuiltNorth\WPUtility\Utilities\Utility`
-- `BuiltNorth\WPUtility\Helper` → `BuiltNorth\WPUtility\Helpers\Helper`
-- `BuiltNorth\WPUtility\Utilities\ImageSetup` → `BuiltNorth\WPUtility\Setup\ImageSetup`
+## Facades
+
+The three facades are the intended entry points, and each gives a consumer the
+whole area through a single `use` statement:
+
+- `BuiltNorth\WPUtility\Facade\Component` — rendering components
+- `BuiltNorth\WPUtility\Facade\Helper` — helpers
+- `BuiltNorth\WPUtility\Facade\Utility` — utilities
+
+They delegate and never implement. Reaching for a leaf class directly
+(`Components\Image`, `Helpers\PresetColor`) is supported, but if a facade is
+missing something a consumer needs, that is a gap in the facade.
+
+### Moved in 3.0.0
+
+- `BuiltNorth\WPUtility\Component` and `Components\Component` → `Facade\Component`
+- `BuiltNorth\WPUtility\Utility` and `Utilities\Utility` → `Facade\Utility`
+- `BuiltNorth\WPUtility\Helper` and `Helpers\Helper` → `Facade\Helper`
+
+`BuiltNorth\WPUtility\Utilities\ImageSetup` still forwards to
+`BuiltNorth\WPUtility\Setup\ImageSetup`.
 
 ## Testing
 

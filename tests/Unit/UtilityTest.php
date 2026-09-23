@@ -1,87 +1,58 @@
 <?php
 /**
- * Tests for the Utility class
+ * Tests for the Utility facade
  *
  * @package BuiltNorth\WPUtility\Tests\Unit
  */
 
 namespace BuiltNorth\WPUtility\Tests\Unit;
 
-use BuiltNorth\WPUtility\Utility;
+use BuiltNorth\WPUtility\Facade\Utility;
 use BuiltNorth\WPUtility\Tests\WPMockTestCase;
-use WP_Mock;
 
 /**
- * Utility test case
+ * Utility facade test case
+ *
+ * @covers \BuiltNorth\WPUtility\Facade\Utility
  */
 class UtilityTest extends WPMockTestCase {
 
 	/**
-	 * Test that Utility uses static methods
+	 * Every utility a consumer needs is reachable from this one import.
+	 *
+	 * Guards the reason the facade exists: consumers previously had to import
+	 * Utilities\PhoneNumber alongside it to reach tel_link().
 	 */
-	public function test_utility_uses_static_methods() {
-		$this->assertTrue( class_exists( Utility::class ) );
-		
-		// Utility uses __callStatic for calling utilities
-		$this->assertTrue( method_exists( Utility::class, '__callStatic' ) );
+	public function test_facade_exposes_the_full_utility_surface() {
+		foreach ( [
+			'archive_url',
+			'country_list',
+			'get_terms',
+			'get_title',
+			'image_setup',
+			'to_e164',
+			'tel_link',
+			'reading_time',
+			'state_list',
+		] as $method ) {
+			$this->assertTrue(
+				method_exists( Utility::class, $method ),
+				"Utility::{$method}() is missing from the facade"
+			);
+		}
 	}
 
 	/**
-	 * Test that Utility throws exception for non-existent utility
+	 * __callStatic was removed; a missing method is a fatal, not a swallowed call.
 	 */
-	public function test_utility_throws_exception_for_nonexistent() {
-		$this->expectException( \BadMethodCallException::class );
-		$this->expectExceptionMessage( 'Utility method nonexistent does not exist.' );
-		
-		Utility::nonexistent();
+	public function test_facade_does_not_define_call_static() {
+		$this->assertFalse( method_exists( Utility::class, '__callStatic' ) );
 	}
 
 	/**
-	 * Test archive URL utility exists
+	 * to_e164() delegates to PhoneNumber and keeps its typed signature.
 	 */
-	public function test_archive_url_utility_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Utilities\\ArchiveUrl' ) );
-	}
-
-	/**
-	 * Test country list utility exists
-	 */
-	public function test_country_list_utility_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Utilities\\CountryList' ) );
-	}
-
-	/**
-	 * Test get terms utility exists
-	 */
-	public function test_get_terms_utility_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Utilities\\GetTerms' ) );
-	}
-
-	/**
-	 * Test get title utility exists
-	 */
-	public function test_get_title_utility_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Utilities\\GetTitle' ) );
-	}
-
-	/**
-	 * Test image setup utility exists
-	 */
-	public function test_image_setup_utility_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Utilities\\ImageSetup' ) );
-	}
-
-	/**
-	 * Test reading time utility exists
-	 */
-	public function test_reading_time_utility_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Utilities\\ReadingTime' ) );
-	}
-
-	/**
-	 * Test state list utility exists
-	 */
-	public function test_state_list_utility_exists() {
-		$this->assertTrue( class_exists( 'BuiltNorth\\WPUtility\\Utilities\\StateList' ) );
+	public function test_phone_to_e164_delegates() {
+		$this->assertSame( '+15551234567', Utility::to_e164( '(555) 123-4567' ) );
 	}
 }
