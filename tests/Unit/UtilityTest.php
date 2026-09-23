@@ -7,13 +7,13 @@
 
 namespace BuiltNorth\WPUtility\Tests\Unit;
 
-use BuiltNorth\WPUtility\Facade\Utility;
+use BuiltNorth\WPUtility\Utility;
 use BuiltNorth\WPUtility\Tests\WPMockTestCase;
 
 /**
  * Utility facade test case
  *
- * @covers \BuiltNorth\WPUtility\Facade\Utility
+ * @covers \BuiltNorth\WPUtility\Utility
  */
 class UtilityTest extends WPMockTestCase {
 
@@ -34,6 +34,10 @@ class UtilityTest extends WPMockTestCase {
 			'tel_link',
 			'reading_time',
 			'state_list',
+			'format_address',
+			'address_schema',
+			'weekly_hours_schema',
+			'special_hours_schema',
 		] as $method ) {
 			$this->assertTrue(
 				method_exists( Utility::class, $method ),
@@ -47,6 +51,16 @@ class UtilityTest extends WPMockTestCase {
 	 */
 	public function test_facade_does_not_define_call_static() {
 		$this->assertFalse( method_exists( Utility::class, '__callStatic' ) );
+	}
+
+	/**
+	 * No forwarding method takes ...$args. See ComponentTest for why.
+	 */
+	public function test_no_forwarding_method_is_variadic() {
+		$r = new \ReflectionClass( Utility::class );
+		foreach ( $r->getMethods( \ReflectionMethod::IS_PUBLIC ) as $m ) {
+			$this->assertFalse( $m->isVariadic(), "Utility::{$m->getName()}() is variadic" );
+		}
 	}
 
 	/**

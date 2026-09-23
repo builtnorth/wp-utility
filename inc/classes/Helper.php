@@ -7,7 +7,7 @@
  * @since 3.0.0
  */
 
-namespace BuiltNorth\WPUtility\Facade;
+namespace BuiltNorth\WPUtility;
 
 use BuiltNorth\WPUtility\Helpers\EscapeSvg;
 use BuiltNorth\WPUtility\Helpers\MetaGatedRender;
@@ -22,15 +22,14 @@ defined('ABSPATH') || defined('WP_CLI') || exit;
 /**
  * Single import for every helper in this package.
  *
- * Lives under `Facade\` so the package root stays free of loose entry-point
- * files while a consumer still reaches the whole helper surface through one
- * `use` statement.
- *
  * The preset-color and post-id methods are exposed here because consumers were
  * importing `Helpers\PresetColor` and `Helpers\MetaGatedRender` alongside this
  * facade to reach them — `resolve_post_id()` alone had twelve call sites. A
  * facade that forces a second import for the most-used helper in the package
  * is not doing its job.
+ *
+ * Forwarding methods restate the leaf's parameters rather than taking
+ * `...$args`, so the contract is visible to an IDE and to static analysis.
  *
  * Methods here delegate and do not implement.
  */
@@ -39,11 +38,11 @@ class Helper
 	/**
 	 * Escape SVG markup for safe output.
 	 *
-	 * @param string $svg SVG content to escape.
+	 * @param string $svg_content SVG content to escape.
 	 */
-	public static function escape_svg($svg)
+	public static function escape_svg($svg_content)
 	{
-		return EscapeSvg::render($svg);
+		return EscapeSvg::render($svg_content);
 	}
 
 	/**

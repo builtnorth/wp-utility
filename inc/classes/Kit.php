@@ -65,10 +65,10 @@ class Kit
 	/**
 	 * Boot the utility package.
 	 *
-	 * Only registers what actually needs a hook. The facades under `Facade\`
-	 * and every leaf class are stateless and static, so there is nothing to
-	 * instantiate at boot: the predecessor of this method built three facade
-	 * instances and looked for an `init()` none of them declared.
+	 * Only registers what actually needs a hook. The Component, Helper and
+	 * Utility facades and every leaf class are stateless and static, so there is
+	 * nothing to instantiate at boot: the predecessor of this method built three
+	 * facade instances and looked for an `init()` none of them declared.
 	 */
 	public function boot()
 	{

@@ -7,13 +7,13 @@
 
 namespace BuiltNorth\WPUtility\Tests\Unit;
 
-use BuiltNorth\WPUtility\Facade\Helper;
+use BuiltNorth\WPUtility\Helper;
 use BuiltNorth\WPUtility\Tests\WPMockTestCase;
 
 /**
  * Helper facade test case
  *
- * @covers \BuiltNorth\WPUtility\Facade\Helper
+ * @covers \BuiltNorth\WPUtility\Helper
  */
 class HelperTest extends WPMockTestCase {
 
@@ -52,6 +52,16 @@ class HelperTest extends WPMockTestCase {
 	 */
 	public function test_facade_does_not_define_call_static() {
 		$this->assertFalse( method_exists( Helper::class, '__callStatic' ) );
+	}
+
+	/**
+	 * No forwarding method takes ...$args. See ComponentTest for why.
+	 */
+	public function test_no_forwarding_method_is_variadic() {
+		$r = new \ReflectionClass( Helper::class );
+		foreach ( $r->getMethods( \ReflectionMethod::IS_PUBLIC ) as $m ) {
+			$this->assertFalse( $m->isVariadic(), "Helper::{$m->getName()}() is variadic" );
+		}
 	}
 
 	/**
